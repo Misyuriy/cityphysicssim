@@ -15,7 +15,10 @@ class Sprite:
         return self.image.get_width(), self.image.get_height()
 
     def get_rotated_image(self, rotation: float):
-        return pygame.transform.rotate(self.image, rotation)
+        rotated_image = pygame.transform.rotate(self.image, rotation)
+        new_shape = rotated_image.get_rect(center=rotated_image.get_rect().center)
+
+        return rotated_image, new_shape
 
 
 class Window(object):
@@ -34,8 +37,8 @@ class Window(object):
     def clear(self):
         self.display.fill('white')
 
-    def render(self, sprite: Sprite, position):
-        self.display.blit(sprite.image, list(position))
+    def render(self, image: pygame.Surface, position):
+        self.display.blit(image, list(position))
 
     def update(self):
         pygame.display.flip()

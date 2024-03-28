@@ -100,8 +100,19 @@ class Object:
         self.sprite: Sprite = sprite
 
     def render_to(self, window: graphics.Window):
-        edge_position = self.position - 0.5 * Vector2(*self.sprite.get_shape())
-        window.render(self.sprite, edge_position)
+        if self.rotation:
+            rotated_image, rotated_shape = self.sprite.get_rotated_image(self.rotation)
+            edge_position = self.position - 0.5 * Vector2(*rotated_shape)
+
+            window.render(rotated_image, edge_position)
+        else:
+            edge_position = self.position - 0.5 * Vector2(*self.sprite.get_shape())
+            window.render(self.sprite.image, edge_position)
 
     def set_position(self, new_position: tuple | list | Point2 | Vector2):
         self.position = Vector2(*new_position)
+
+
+class PhysicsDynamicCircle:
+    def __init__(self):
+        pass
