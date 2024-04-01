@@ -40,11 +40,20 @@ def mainloop():
 
     objects.append(Building(
         edge_position=(300, 300),
-        sprite=graphics.Sprite('assets/images/sprites/empty_sprite.png'),
+        sprite=graphics.Sprite('assets/images/sprites/small_empty_sprite.png'),
+        height=5
+    ))
+
+    objects.append(Building(
+        edge_position=(100, 100),
+        rotation=60,
+        sprite=graphics.Sprite('assets/images/sprites/another_test_empty_sprite.png'),
         height=5
     ))
 
     while running:
+        objects[1].rotation += 0.1
+        objects[0].rotation -= 0.1
         for event in window.get_input():
             match event:
                 case InputType.LMB:
