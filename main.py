@@ -4,6 +4,9 @@ from graphics import Window, InputType
 import physics
 from physics import Vector2, Point2, Object
 
+import city
+from city import Building
+
 
 class Camera:
     def __new__(cls, *args, **kwargs):
@@ -12,8 +15,14 @@ class Camera:
         return cls.instance
 
     def __init__(self,
-                 position: tuple | list | Point2 | Vector2 = Vector2(0, 0),):
-        self.position: Vector2 = Vector2(position)
+                 position: tuple | list | Point2 | Vector2 = Vector2(0, 0),
+                 shape: tuple | list | Point2 | Vector2 = Vector2(0, 0)):
+        self.position: Vector2 = Vector2(*position)
+
+        self.shape: Vector2 = Vector2(*shape)
+
+    def get_center_position(self):
+        return self.position + (0.5 * Vector2(self.shape))
 
     def get_relative_position(self, global_position: Vector2):
         return global_position - self.position
@@ -24,25 +33,18 @@ class Camera:
 
 def mainloop():
     window = graphics.Window([400, 400], 'Пригожин женя')
-    camera = Camera()
+    camera = Camera(shape=[400, 400])
 
     running = True
     objects: list[Object] = []
 
-    objects.append(physics.PhysicsDynamicCircle(
-        position=(100, 100),
-        radius=64,
-        linear_torque=0,
-        angular_torque=0
-        ))
-
-    objects.append(physics.PhysicsStaticRect(
+    objects.append(Building(
         edge_position=(300, 300),
-        sprite=graphics.Sprite('assets/images/sprites/long_sprite.png')
+        sprite=graphics.Sprite('assets/images/sprites/empty_sprite.png'),
+        height=5
     ))
 
     while running:
-        objects[0].rotation += 0.1
         for event in window.get_input():
             match event:
                 case InputType.LMB:
@@ -53,13 +55,13 @@ def mainloop():
                         camera.get_global_position(Vector2(*window.get_mouse_position())))
 
                 case InputType.W:
-                    camera.position += Vector2(0, -1)
+                    camera.position += Vector2(0, -0.5)
                 case InputType.A:
-                    camera.position += Vector2(-1, 0)
+                    camera.position += Vector2(-0.5, 0)
                 case InputType.S:
-                    camera.position += Vector2(0, 1)
+                    camera.position += Vector2(0, 0.5)
                 case InputType.D:
-                    camera.position += Vector2(1, 0)
+                    camera.position += Vector2(0.5, 0)
 
                 case InputType.QUIT:
                     running = False

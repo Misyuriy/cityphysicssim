@@ -177,7 +177,7 @@ class PhysicsStaticRect(Object):
         if rect:
             self.rect = rect
         else:
-            self.rect = Vector2(self.sprite.get_shape())
+            self.rect = Vector2(*self.sprite.get_shape())
 
     def is_colliding_with(self, other):
         if hasattr(other, 'radius'):

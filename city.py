@@ -20,4 +20,15 @@ class Building(physics.PhysicsStaticRect):
 
     def render_to(self, window: graphics.Window, camera):
         super().render_to(window, camera)
-        # написать эффект параллакс
+
+        relative_position = camera.get_relative_position(self.position)
+
+        parallax = (1 / 8) * (camera.get_center_position() - self.position)
+
+        for floor in range(self.height):
+            floor_sprite, floor_shape = self.sprite.get_scaled_image((1.1 ** floor) * Vector2(*self.sprite.get_shape()))
+
+            edge_position = relative_position - 0.5 * Vector2(*floor_shape)
+            edge_position -= floor * Vector2(parallax)
+
+            window.render(floor_sprite, edge_position)

@@ -20,6 +20,12 @@ class Sprite:
 
         return rotated_image, new_shape
 
+    def get_scaled_image(self, new_scale):
+        scaled_image = pygame.transform.scale(self.image, list(new_scale))
+        new_shape = scaled_image.get_rect(center=scaled_image.get_rect().center)
+
+        return scaled_image, new_shape
+
 
 class Window(object):
     def __new__(cls, *args, **kwargs):
