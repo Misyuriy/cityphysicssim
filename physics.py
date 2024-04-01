@@ -101,14 +101,16 @@ class Object:
         self.sprite: Sprite = sprite
         self.name: str = name
 
-    def render_to(self, window: graphics.Window):
+    def render_to(self, window: graphics.Window, camera):
+        render_position = camera.get_relative_position(self.position)
+
         if self.rotation:
             rotated_image, rotated_shape = self.sprite.get_rotated_image(self.rotation)
-            edge_position = self.position - 0.5 * Vector2(*rotated_shape)
+            edge_position = render_position - 0.5 * Vector2(*rotated_shape)
 
             window.render(rotated_image, edge_position)
         else:
-            edge_position = self.position - 0.5 * Vector2(*self.sprite.get_shape())
+            edge_position = render_position - 0.5 * Vector2(*self.sprite.get_shape())
             window.render(self.sprite.image, edge_position)
 
     def set_position(self, new_position: tuple | list | Point2 | Vector2):
@@ -154,11 +156,12 @@ class PhysicsDynamicCircle(Object):
             pass # написать расчет с прямоугольником
         return False
 
-    def render_to(self, window: graphics.Window):
-        super().render_to(window)
+    def render_to(self, window: graphics.Window, camera):
+        super().render_to(window, camera)
 
         if self.render_hitbox:
-            window.render_circle(self.radius, self.position, color=(255, 0, 0))
+            render_position = camera.get_relative_position(self.position)
+            window.render_circle(self.radius, render_position, color=(255, 0, 0))
 
 
 class PhysicsStaticRect(Object):

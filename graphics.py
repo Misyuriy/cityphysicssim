@@ -34,6 +34,8 @@ class Window(object):
         if caption:
             pygame.display.set_caption(caption)
 
+        self.pressed_keys = set()
+
     def clear(self):
         self.display.fill('white')
 
@@ -54,28 +56,34 @@ class Window(object):
 
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
-                relevant_events.append(100 + event.button)
+                self.pressed_keys.add(event.button)
             elif event.type == pygame.MOUSEBUTTONUP:
-                relevant_events.append(200 + event.button)
+                self.pressed_keys.remove(event.button)
+
+            elif event.type == pygame.KEYDOWN:
+                self.pressed_keys.add(event.key)
+            elif event.type == pygame.KEYUP:
+                self.pressed_keys.remove(event.key)
 
             elif event.type in [pygame.QUIT]:
                 relevant_events.append(event.type)
 
-        return relevant_events
+        return relevant_events + list(self.pressed_keys)
 
 
 class InputType:
     QUIT = pygame.QUIT
 
-    LMB_DOWN = 101
-    RMB_DOWN = 103
-    LMB_UP = 201
-    RMB_UP = 203
+    LMB = 1
+    RMB = 3
 
-    SCROLL_UP_START = 104
-    SCROLL_UP_STOP = 204
-    SCROLL_DOWN_START = 105
-    SCROLL_DOWN_STOP = 205
+    W = pygame.K_w
+    A = pygame.K_a
+    S = pygame.K_s
+    D = pygame.K_d
+
+    SCROLL_UP = 4
+    SCROLL_DOWN = 5
 
 
 DEFAULT_SPRITE = Sprite(path='assets/images/sprites/default_sprite.png')
