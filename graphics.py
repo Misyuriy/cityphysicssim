@@ -40,6 +40,9 @@ class Window(object):
     def render(self, image: pygame.Surface, position):
         self.display.blit(image, list(position))
 
+    def render_circle(self, radius: float, position, color):
+        pygame.draw.circle(self.display, color, list(position), radius)
+
     def update(self):
         pygame.display.flip()
 

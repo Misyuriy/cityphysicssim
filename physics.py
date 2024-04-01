@@ -113,6 +113,40 @@ class Object:
         self.position = Vector2(*new_position)
 
 
-class PhysicsDynamicCircle:
-    def __init__(self):
+class PhysicsDynamicCircle(Object):
+    def __init__(self,
+                 position: tuple | list | Point2 | Vector2 = Vector2(0, 0),
+                 rotation: float = 0,
+                 sprite: Sprite = graphics.DEFAULT_SPRITE,
+                 radius: float = 1,
+                 mass: float = 1,
+                 linear_torque: float = 0,
+                 angular_torque: float = 0):
+        super().__init__(position, rotation, sprite)
+
+        self.radius: float = radius
+        self.mass: float = mass
+
+        self.linear_velocity: Vector2 = Vector2(0, 0)
+        self.angular_velocity: float = 0
+
+        self.linear_torque: float = linear_torque
+        self.angular_torque: float = angular_torque
+
+        self.render_hitbox = True
+
+    def update(self, delta, collisions: list[Object]):
+        #self.position += delta * self.linear_velocity
         pass
+
+    def is_colliding_with(self, other):
+        if hasattr(other, 'radius'):
+            if self.position.dist(other.position) <= self.radius + other.radius:
+                return True
+        return False
+
+    def render_to(self, window: graphics.Window):
+        super().render_to(window)
+
+        if self.render_hitbox:
+            window.render_circle(self.radius, self.position, color=(255, 0, 0))
