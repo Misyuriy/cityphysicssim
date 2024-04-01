@@ -18,11 +18,9 @@ def mainloop():
         angular_torque=0
         ))
 
-    objects.append(physics.PhysicsDynamicCircle(
-        position=(300, 300),
-        radius=64,
-        linear_torque=0,
-        angular_torque=0
+    objects.append(physics.PhysicsStaticRect(
+        edge_position=(300, 300),
+        sprite=graphics.Sprite('assets/images/sprites/long_sprite.png')
     ))
 
     while running:

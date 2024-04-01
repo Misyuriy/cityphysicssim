@@ -93,11 +93,13 @@ class Object:
     def __init__(self,
                  position: tuple | list | Point2 | Vector2 = Vector2(0, 0),
                  rotation: float = 0,
-                 sprite: Sprite = graphics.DEFAULT_SPRITE):
+                 sprite: Sprite = graphics.DEFAULT_SPRITE,
+                 name: str = 'Object'):
         self.position: Vector2 = Vector2(*position)
         self.rotation: float = rotation
 
         self.sprite: Sprite = sprite
+        self.name: str = name
 
     def render_to(self, window: graphics.Window):
         if self.rotation:
@@ -112,17 +114,22 @@ class Object:
     def set_position(self, new_position: tuple | list | Point2 | Vector2):
         self.position = Vector2(*new_position)
 
+    def __str__(self):
+        return self.name
+
 
 class PhysicsDynamicCircle(Object):
     def __init__(self,
                  position: tuple | list | Point2 | Vector2 = Vector2(0, 0),
                  rotation: float = 0,
                  sprite: Sprite = graphics.DEFAULT_SPRITE,
+                 name: str = 'PhysicsDynamicCircle',
                  radius: float = 1,
                  mass: float = 1,
                  linear_torque: float = 0,
                  angular_torque: float = 0):
-        super().__init__(position, rotation, sprite)
+
+        super().__init__(position, rotation, sprite, name)
 
         self.radius: float = radius
         self.mass: float = mass
@@ -143,6 +150,8 @@ class PhysicsDynamicCircle(Object):
         if hasattr(other, 'radius'):
             if self.position.dist(other.position) <= self.radius + other.radius:
                 return True
+        elif hasattr(other, 'rect'):
+            pass # написать расчет с прямоугольником
         return False
 
     def render_to(self, window: graphics.Window):
@@ -150,3 +159,26 @@ class PhysicsDynamicCircle(Object):
 
         if self.render_hitbox:
             window.render_circle(self.radius, self.position, color=(255, 0, 0))
+
+
+class PhysicsStaticRect(Object):
+    def __init__(self,
+                 edge_position: tuple | list | Point2 | Vector2 = Vector2(0, 0),
+                 rotation: float = 0,
+                 sprite: Sprite = graphics.DEFAULT_SPRITE,
+                 name: str = 'PhysicsStaticRect',
+                 rect: Vector2 = None
+                 ):
+        super().__init__(edge_position, rotation, sprite, name)
+
+        if rect:
+            self.rect = rect
+        else:
+            self.rect = Vector2(self.sprite.get_shape())
+
+    def is_colliding_with(self, other):
+        if hasattr(other, 'radius'):
+            pass # написать расчет с радиусом
+        elif hasattr(other, 'rect'):
+            pass # написать расчет с прямоугольником
+        return False
