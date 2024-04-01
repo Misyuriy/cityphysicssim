@@ -1,3 +1,6 @@
+from copy import deepcopy
+import random
+
 import graphics
 from graphics import Window, InputType
 
@@ -43,22 +46,18 @@ def mainloop():
     running = True
     objects: list[Object] = []
 
-    objects.append(Building(
-        edge_position=(300, 300),
-        sprite=graphics.Sprite('assets/images/sprites/small_empty_sprite.png'),
-        height=5
-    ))
+    for index in range(10):
+        building = Building(
+            edge_position=(0, 200 * index),
+            #rotation=random.randint(0, 20),
+            sprite=graphics.Sprite('assets/images/sprites/buildings/test_building.png'),
+            height=5,
+            roof_sprite=graphics.Sprite('assets/images/sprites/buildings/test_roof.png')
+        )
 
-    objects.append(Building(
-        edge_position=(100, 100),
-        rotation=60,
-        sprite=graphics.Sprite('assets/images/sprites/another_test_empty_sprite.png'),
-        height=5
-    ))
+        objects.append(building)
 
     while running:
-        objects[1].rotation += 0.1
-        objects[0].rotation -= 0.1
         for event in window.get_input():
             match event:
                 case InputType.LMB:
@@ -69,13 +68,13 @@ def mainloop():
                         camera.get_global_position(Vector2(*window.get_mouse_position())))
 
                 case InputType.W:
-                    camera.position += Vector2(0, -1)
+                    camera.position += Vector2(0, -2)
                 case InputType.A:
-                    camera.position += Vector2(-1, 0)
+                    camera.position += Vector2(-2, 0)
                 case InputType.S:
-                    camera.position += Vector2(0, 1)
+                    camera.position += Vector2(0, 2)
                 case InputType.D:
-                    camera.position += Vector2(1, 0)
+                    camera.position += Vector2(2, 0)
 
                 case InputType.QUIT:
                     running = False
