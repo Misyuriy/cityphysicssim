@@ -3,7 +3,6 @@ import random
 
 import graphics
 from graphics import Window, InputType
-
 import physics
 from physics import Vector2, Point2, Object
 
@@ -13,6 +12,7 @@ from city import Building
 import igtime
 
 import settings
+import maps
 
 
 class Camera:
@@ -39,34 +39,16 @@ class Camera:
 
 
 def mainloop():
-    window = graphics.Window([400, 400], 'Пригожин женя')
-    camera = Camera(shape=[400, 400])
+    window = graphics.Window([600, 600], 'Пригожин женя')
+    camera = Camera(shape=[600, 600])
     time = igtime.Time()
 
     running = True
-    objects: list[Object] = []
-
-    for index in range(10):
-        building = Building(
-            edge_position=(0, 200 * index),
-            #rotation=random.randint(0, 20),
-            sprite=graphics.Sprite('assets/images/sprites/buildings/test_building.png'),
-            height=5,
-            roof_sprite=graphics.Sprite('assets/images/sprites/buildings/test_roof.png')
-        )
-
-        objects.append(building)
+    objects: list[Object] = maps.test_map.get_objects()
 
     while running:
         for event in window.get_input():
             match event:
-                case InputType.LMB:
-                    objects[0].set_position(
-                        camera.get_global_position(Vector2(*window.get_mouse_position())))
-                case InputType.RMB:
-                    objects[1].set_position(
-                        camera.get_global_position(Vector2(*window.get_mouse_position())))
-
                 case InputType.W:
                     camera.position += Vector2(0, -2)
                 case InputType.A:
