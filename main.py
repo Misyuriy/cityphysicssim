@@ -7,6 +7,10 @@ from physics import Vector2, Point2, Object
 import city
 from city import Building
 
+import igtime
+
+import settings
+
 
 class Camera:
     def __new__(cls, *args, **kwargs):
@@ -34,6 +38,7 @@ class Camera:
 def mainloop():
     window = graphics.Window([400, 400], 'Пригожин женя')
     camera = Camera(shape=[400, 400])
+    time = igtime.Time()
 
     running = True
     objects: list[Object] = []
@@ -64,13 +69,13 @@ def mainloop():
                         camera.get_global_position(Vector2(*window.get_mouse_position())))
 
                 case InputType.W:
-                    camera.position += Vector2(0, -0.5)
+                    camera.position += Vector2(0, -1)
                 case InputType.A:
-                    camera.position += Vector2(-0.5, 0)
+                    camera.position += Vector2(-1, 0)
                 case InputType.S:
-                    camera.position += Vector2(0, 0.5)
+                    camera.position += Vector2(0, 1)
                 case InputType.D:
-                    camera.position += Vector2(0.5, 0)
+                    camera.position += Vector2(1, 0)
 
                 case InputType.QUIT:
                     running = False
@@ -84,6 +89,7 @@ def mainloop():
                     print(obj, 'currently colliding with', obj2)
 
         window.update()
+        time.tick(settings.framerate)
 
 
 if __name__ == '__main__':
