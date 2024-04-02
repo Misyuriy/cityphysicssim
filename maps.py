@@ -33,7 +33,5 @@ class Map:
 test_map = Map(
     buildings=[
         Blueprints.t1_4x1.get_building([0, 0], height=7),
-        Blueprints.t1_4x1.get_building([400, 192], rotation=90, height=3),
-        Blueprints.t1_4x1.get_building([0, 384], height=5),
     ]
 )

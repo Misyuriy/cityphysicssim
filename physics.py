@@ -67,6 +67,9 @@ class Vector2(Point2):
 
         return self
 
+    def normalize(self):
+        return Vector2(self.x / abs(self), self.y / abs(self))
+
     def __add__(self, other):
         return Vector2(self.x + other.x, self.y + other.y)
 

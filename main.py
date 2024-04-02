@@ -2,7 +2,7 @@ from copy import deepcopy
 import random
 
 import graphics
-from graphics import Window, InputType
+from graphics import Window, InputType, Color
 import physics
 from physics import Vector2, Point2, Object
 
@@ -39,24 +39,25 @@ class Camera:
 
 
 def mainloop():
-    window = graphics.Window([600, 600], 'Пригожин женя')
+    window = Window([600, 600], 'Пригожин женя')
     camera = Camera(shape=[600, 600])
     time = igtime.Time()
 
     running = True
-    objects: list[Object] = maps.test_map.get_objects()
+    objects: list[Object] = [] #maps.test_map.get_objects()
 
     while running:
+        #objects[0].rotation += 0.5
         for event in window.get_input():
             match event:
                 case InputType.W:
-                    camera.position += Vector2(0, -2)
+                    camera.position.y -= 2
                 case InputType.A:
-                    camera.position += Vector2(-2, 0)
+                    camera.position.x -= 2
                 case InputType.S:
-                    camera.position += Vector2(0, 2)
+                    camera.position.y += 2
                 case InputType.D:
-                    camera.position += Vector2(2, 0)
+                    camera.position.x += 2
 
                 case InputType.QUIT:
                     running = False
@@ -69,8 +70,15 @@ def mainloop():
                 if obj != obj2 and obj.is_colliding_with(obj2):
                     print(obj, 'currently colliding with', obj2)
 
+        test_draw(window)
         window.update()
         time.tick(settings.framerate)
+
+
+def test_draw(window: Window):
+    window.render_circle(32, [300, 300], Color.BLACK)
+    window.render_line([100, 300], [300, 300], 64, Color.BLACK)
+    window.render_line([500, 500], [300, 300], 64, Color.BLACK)
 
 
 if __name__ == '__main__':

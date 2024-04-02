@@ -1,6 +1,11 @@
 import pygame
 
 
+class Color:
+    WHITE = (255, 255, 255)
+    BLACK = (0, 0, 0)
+
+
 class Sprite:
     def __init__(self, path: str = None, image: pygame.Surface = None):
         self.image: pygame.Surface
@@ -45,11 +50,33 @@ class Window(object):
     def clear(self):
         self.display.fill('white')
 
+    def _correctly_render_line(self, start, end, width, color):
+        pass
+        #pygame.draw.polygon(self.display, color,
+                            #[[250, 110], [280, 150],
+                             #[190, 190], [130, 130]])
+
     def render(self, image: pygame.Surface, position):
         self.display.blit(image, list(position))
 
     def render_circle(self, radius: float, position, color):
         pygame.draw.circle(self.display, color, list(position), radius)
+
+    def render_line(self, start, end, width: int = 1, color: tuple | list = Color.WHITE, dash: float = 1, gap: float = 0):
+        if gap:
+            current_start = start
+
+            while abs(current_start - start) < abs(end - start):
+                current_end = current_start + dash * (end - start).normalize()
+                if abs(current_end - start) > abs(end - start):
+                    current_end = end
+
+                pygame.draw.line(self.display, color, list(current_start), list(current_end), width)
+
+                current_start = current_end + gap * (end - start).normalize()
+
+        else:
+            pygame.draw.line(self.display, color, list(start), list(end), width)
 
     def update(self):
         pygame.display.flip()
