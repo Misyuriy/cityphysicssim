@@ -13,7 +13,7 @@ class BuildingBlueprint:
         self.roof_sprite: Sprite = roof_sprite
 
     def get_building(self, position: tuple | list | Vector2, rotation: float = 0, height: int = 1):
-        return city.Building(edge_position=position, rotation=rotation, sprite=self.sprite, height=height, roof_sprite=self.roof_sprite)
+        return city.Building(sprite=self.sprite, edge_position=position, rotation=rotation, height=height, roof_sprite=self.roof_sprite)
 
 
 class Blueprints:
@@ -32,6 +32,6 @@ class Map:
 
 test_map = Map(
     buildings=[
-        Blueprints.t1_4x1.get_building([0, 0], height=7),
+        Blueprints.t1_4x1.get_building(position=[0, 0], height=7),
     ]
 )

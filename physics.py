@@ -1,8 +1,5 @@
 import math
 
-import graphics
-from graphics import Sprite
-
 
 class Point2:
     def __init__(self, x, y=None, polar=False):
@@ -94,17 +91,17 @@ class Vector2(Point2):
 
 class Object:
     def __init__(self,
-                 position: tuple | list | Point2 | Vector2 = Vector2(0, 0),
-                 rotation: float = 0,
-                 sprite: Sprite = graphics.DEFAULT_SPRITE,
+                 sprite,
+                 position: tuple | list | Point2 | Vector2,
+                 rotation: float,
                  name: str = 'Object'):
         self.position: Vector2 = Vector2(*position)
         self.rotation: float = rotation
 
-        self.sprite: Sprite = sprite
+        self.sprite = sprite
         self.name: str = name
 
-    def render_to(self, window: graphics.Window, camera):
+    def render_to(self, window, camera):
         render_position = camera.get_relative_position(self.position)
 
         if self.rotation:
@@ -125,16 +122,16 @@ class Object:
 
 class PhysicsDynamicCircle(Object):
     def __init__(self,
-                 position: tuple | list | Point2 | Vector2 = Vector2(0, 0),
+                 sprite,
+                 position: tuple | list | Point2 | Vector2,
                  rotation: float = 0,
-                 sprite: Sprite = graphics.DEFAULT_SPRITE,
                  name: str = 'PhysicsDynamicCircle',
                  radius: float = 1,
                  mass: float = 1,
                  linear_torque: float = 0,
                  angular_torque: float = 0):
 
-        super().__init__(position, rotation, sprite, name)
+        super().__init__(sprite, position, rotation, name)
 
         self.radius: float = radius
         self.mass: float = mass
@@ -159,7 +156,7 @@ class PhysicsDynamicCircle(Object):
             pass # написать расчет с прямоугольником
         return False
 
-    def render_to(self, window: graphics.Window, camera):
+    def render_to(self, window, camera):
         super().render_to(window, camera)
 
         if self.render_hitbox:
@@ -169,13 +166,13 @@ class PhysicsDynamicCircle(Object):
 
 class PhysicsStaticRect(Object):
     def __init__(self,
-                 edge_position: tuple | list | Point2 | Vector2 = Vector2(0, 0),
+                 sprite,
+                 edge_position: tuple | list | Point2 | Vector2,
                  rotation: float = 0,
-                 sprite: Sprite = graphics.DEFAULT_SPRITE,
                  name: str = 'PhysicsStaticRect',
                  rect: Vector2 = None
                  ):
-        super().__init__(edge_position, rotation, sprite, name)
+        super().__init__(sprite, edge_position, rotation, name)
 
         if rect:
             self.rect = rect

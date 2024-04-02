@@ -70,15 +70,9 @@ def mainloop():
                 if obj != obj2 and obj.is_colliding_with(obj2):
                     print(obj, 'currently colliding with', obj2)
 
-        test_draw(window)
+        window.render_line([100, 100], [300, 300], 64, Color.BLACK, dash=40, gap=20)
         window.update()
         time.tick(settings.framerate)
-
-
-def test_draw(window: Window):
-    window.render_circle(32, [300, 300], Color.BLACK)
-    window.render_line([100, 300], [300, 300], 64, Color.BLACK)
-    window.render_line([500, 500], [300, 300], 64, Color.BLACK)
 
 
 if __name__ == '__main__':

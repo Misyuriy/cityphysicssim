@@ -9,15 +9,15 @@ import settings
 
 class Building(physics.PhysicsStaticRect):
     def __init__(self,
+                 sprite: Sprite,
                  edge_position: tuple | list | Point2 | Vector2 = Vector2(0, 0),
                  rotation: float = 0,
-                 sprite: Sprite = graphics.DEFAULT_SPRITE,
                  name: str = 'Building',
                  rect: Vector2 = None,
                  height: int = 1,
                  roof_sprite: Sprite = None
                  ):
-        super().__init__(edge_position, rotation, sprite, name, rect)
+        super().__init__(sprite, edge_position, rotation, name, rect)
 
         self.height = height
         self.roof_sprite = roof_sprite

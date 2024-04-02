@@ -1,5 +1,8 @@
 import pygame
 
+import physics
+from physics import Vector2
+
 
 class Color:
     WHITE = (255, 255, 255)
@@ -25,7 +28,7 @@ class Sprite:
 
         return rotated_image, new_shape
 
-    def get_scaled_image(self, new_scale):
+    def get_scaled_image(self, new_scale: Vector2):
         scaled_image = pygame.transform.scale(self.image, list(new_scale))
         new_shape = scaled_image.get_rect(center=scaled_image.get_rect().center)
 
@@ -50,19 +53,31 @@ class Window(object):
     def clear(self):
         self.display.fill('white')
 
-    def _correctly_render_line(self, start, end, width, color):
-        pass
-        #pygame.draw.polygon(self.display, color,
-                            #[[250, 110], [280, 150],
-                             #[190, 190], [130, 130]])
+    def _c_render_line(self, start: Vector2, end: Vector2, width: int, color: tuple | list):
+        line_vector = end - start
+        perpendicular = (width / 2) * Vector2(line_vector.y, -line_vector.x).normalize()
+        inverse = Vector2(-perpendicular.x, -perpendicular.y)
 
-    def render(self, image: pygame.Surface, position):
+        pygame.draw.polygon(self.display, color,
+                            [list(start + perpendicular), list(start + inverse),
+                             list(end + inverse), list(end + perpendicular)])
+
+    def render(self, image: pygame.Surface, position: Vector2):
         self.display.blit(image, list(position))
 
-    def render_circle(self, radius: float, position, color):
+    def render_circle(self, radius: float, position: tuple | list | Vector2, color: tuple | list):
         pygame.draw.circle(self.display, color, list(position), radius)
 
-    def render_line(self, start, end, width: int = 1, color: tuple | list = Color.WHITE, dash: float = 1, gap: float = 0):
+    def render_line(self,
+                    start: tuple | list | Vector2,
+                    end: tuple | list | Vector2,
+                    width: int = 1,
+                    color: tuple | list = Color.WHITE,
+                    dash: float = 1,
+                    gap: float = 0):
+        start = Vector2(*start)
+        end = Vector2(*end)
+
         if gap:
             current_start = start
 
@@ -71,12 +86,12 @@ class Window(object):
                 if abs(current_end - start) > abs(end - start):
                     current_end = end
 
-                pygame.draw.line(self.display, color, list(current_start), list(current_end), width)
+                self._c_render_line(current_start, current_end, width, color)
 
                 current_start = current_end + gap * (end - start).normalize()
 
         else:
-            pygame.draw.line(self.display, color, list(start), list(end), width)
+            self._c_render_line(start, end, width, color)
 
     def update(self):
         pygame.display.flip()
