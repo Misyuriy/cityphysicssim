@@ -8,6 +8,10 @@ class Color:
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
 
+    DEFAULT = (0, 255, 0)
+
+    ROAD = (100, 100, 100)
+
 
 class Sprite:
     def __init__(self, path: str = None, image: pygame.Surface = None):
@@ -51,7 +55,7 @@ class Window(object):
         self.pressed_keys = set()
 
     def clear(self):
-        self.display.fill('white')
+        self.display.fill(Color.DEFAULT)
 
     def _c_render_line(self, start: Vector2, end: Vector2, width: int, color: tuple | list):
         line_vector = end - start
@@ -92,6 +96,25 @@ class Window(object):
 
         else:
             self._c_render_line(start, end, width, color)
+
+    def render_line_edges(self,
+                          start: Vector2,
+                          end: Vector2,
+                          width: int,
+                          color: tuple | list = Color.WHITE,
+                          dash: float = 1,
+                          gap: float = 0,
+                          edge_width: int = 1,
+                          left_edge: bool = True,
+                          right_edge: bool = True):
+        line_vector = end - start
+        perpendicular = (width / 2) * Vector2(line_vector.y, -line_vector.x).normalize()
+        inverse = Vector2(-perpendicular.x, -perpendicular.y)
+
+        if right_edge:
+            self.render_line(start + perpendicular, end + perpendicular, edge_width, color, dash, gap)
+        if left_edge:
+            self.render_line(start + inverse, end + inverse, edge_width, color, dash, gap)
 
     def update(self):
         pygame.display.flip()

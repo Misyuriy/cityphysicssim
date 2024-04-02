@@ -7,7 +7,7 @@ import physics
 from physics import Vector2, Point2, Object
 
 import city
-from city import Building
+from city import Building, RoadGraph
 
 import igtime
 
@@ -40,14 +40,14 @@ class Camera:
 
 def mainloop():
     window = Window([600, 600], 'Пригожин женя')
-    camera = Camera(shape=[600, 600])
+    camera = Camera(position=[0, -200], shape=[600, 600])
     time = igtime.Time()
 
     running = True
-    objects: list[Object] = [] #maps.test_map.get_objects()
+    objects: list[Object] = maps.test_map.get_objects()
+    roads: RoadGraph = maps.test_map.get_roads()
 
     while running:
-        #objects[0].rotation += 0.5
         for event in window.get_input():
             match event:
                 case InputType.W:
@@ -63,6 +63,8 @@ def mainloop():
                     running = False
 
         window.clear()
+        roads.render_to(window, camera)
+
         for obj in objects:
             obj.render_to(window, camera)
 
@@ -70,7 +72,6 @@ def mainloop():
                 if obj != obj2 and obj.is_colliding_with(obj2):
                     print(obj, 'currently colliding with', obj2)
 
-        window.render_line([100, 100], [300, 300], 64, Color.BLACK, dash=40, gap=20)
         window.update()
         time.tick(settings.framerate)
 

@@ -1,5 +1,5 @@
 import graphics
-from graphics import Sprite
+from graphics import Sprite, Color
 
 import physics
 from physics import Point2, Vector2
@@ -59,3 +59,56 @@ class Building(physics.PhysicsStaticRect):
 
             window.render(roof_image, edge_position)
 
+
+class RoadGraph:
+    def __init__(self, joints: list[Vector2], matrix: list[list]):
+        self.joints: list[Vector2] = joints
+        self.n_joints = len(joints)
+
+        self.matrix: list[list] = matrix
+
+    def render_to(self, window: graphics.Window, camera):
+        relative_position = camera.get_relative_position(Vector2(0, 0))
+
+        for i in range(self.n_joints):
+            for j in range(self.n_joints):
+                if not (self.matrix[i][j] or self.matrix[j][i]):
+                    continue
+
+                window.render_line(relative_position + self.joints[i],
+                                   relative_position + self.joints[j],
+                                   width=settings.road_size * (self.matrix[i][j] + self.matrix[j][i]),
+                                   color=Color.ROAD)
+                window.render_line_edges(relative_position + self.joints[i],
+                                         relative_position + self.joints[j],
+                                         width=settings.road_size * (self.matrix[i][j] + self.matrix[j][i]),
+                                         color=Color.WHITE,
+                                         edge_width=settings.marking_size)
+
+                match self.matrix[i][j] + self.matrix[j][i]:
+                    case 1:
+                        pass
+                    case 2:
+                        window.render_line(relative_position + self.joints[i],
+                                           relative_position + self.joints[j],
+                                           width=settings.marking_size,
+                                           color=Color.WHITE,
+                                           dash=settings.dotted_marking[0],
+                                           gap=settings.dotted_marking[1])
+                    case _:
+                        window.render_line(relative_position + self.joints[i],
+                                           relative_position + self.joints[j],
+                                           width=settings.marking_size,
+                                           color=Color.WHITE)
+                        for n_roads in range(2, self.matrix[i][j] + self.matrix[j][i], 2):
+                            window.render_line_edges(relative_position + self.joints[i],
+                                                     relative_position + self.joints[j],
+                                                     width=settings.road_size * n_roads,
+                                                     color=Color.WHITE,
+                                                     edge_width=settings.marking_size,
+                                                     dash=settings.dotted_marking[0],
+                                                     gap=settings.dotted_marking[1])
+
+        for index, joint in enumerate(self.joints):
+            max_roads = max(self.matrix[index])
+            window.render_circle(settings.road_size * max_roads, relative_position + joint, Color.ROAD)
