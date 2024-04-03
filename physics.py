@@ -150,13 +150,17 @@ class PhysicsDynamicCircle(Object):
         else:
             self.linear_velocity = Vector2(0, 0)
 
-        if self.angular_velocity > delta * self.angular_torque:
+        if abs(self.angular_velocity) > delta * self.angular_torque:
             self.angular_velocity -= delta * self.angular_torque * self.angular_velocity / abs(self.angular_velocity)
         else:
             self.angular_velocity = 0
 
         self.position += delta * Vector2(self.linear_velocity)
         self.rotation += delta * self.angular_velocity
+
+    def apply_force(self, linear_force: Vector2 = Vector2(0, 0), angular_force: float = 0):
+        self.linear_velocity += (1 / self.mass) * linear_force
+        self.angular_velocity += (1 / self.mass) * angular_force
 
     def is_colliding_with(self, other):
         if hasattr(other, 'radius'):

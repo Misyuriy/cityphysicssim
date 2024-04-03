@@ -8,7 +8,7 @@ class Color:
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
 
-    DEFAULT = (0, 255, 0)
+    DEFAULT = (200, 200, 255)
 
     ROAD = (100, 100, 100)
 
@@ -120,16 +120,22 @@ class Window(object):
         pygame.display.flip()
 
     def get_mouse_position(self):
-        return pygame.mouse.get_pos()
+        return Vector2(*pygame.mouse.get_pos())
 
     def get_input(self) -> list:
+        if InputType.SCROLL_UP in self.pressed_keys:
+            self.pressed_keys.remove(InputType.SCROLL_UP)
+        if InputType.SCROLL_DOWN in self.pressed_keys:
+            self.pressed_keys.remove(InputType.SCROLL_DOWN)
+
         relevant_events = []
 
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.pressed_keys.add(event.button)
             elif event.type == pygame.MOUSEBUTTONUP:
-                self.pressed_keys.remove(event.button)
+                if event.button not in [InputType.SCROLL_UP, InputType.SCROLL_DOWN]:
+                    self.pressed_keys.remove(event.button)
 
             elif event.type == pygame.KEYDOWN:
                 self.pressed_keys.add(event.key)

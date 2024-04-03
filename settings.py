@@ -12,5 +12,5 @@ marking_size = 4
 dotted_marking = [48, 48]
 
 # ___ Physics ______________________________
-linear_mu = 10
-angular_mu = 10
+linear_mu = 1
+angular_mu = 1
