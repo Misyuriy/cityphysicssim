@@ -11,4 +11,4 @@ class Time:
         self.clock = time.Clock()
 
     def tick(self, framerate: int):
-        return self.clock.tick(framerate)
+        return self.clock.tick(framerate) / 1000

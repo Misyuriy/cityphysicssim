@@ -51,7 +51,7 @@ class Map:
 test_map = Map(
     buildings=[
         Blueprints.p2_5x2.get_building(position=[300, -300], height=7),
-        Blueprints.p2_5x2.get_building(position=[300, 200], height=7),
+        #Blueprints.p2_5x2.get_building(position=[300, 200], height=7),
     ],
     road_joints=[Vector2(0, 0), Vector2(600, 600), Vector2(0, 600), Vector2(600, 0)],
     road_matrix=[[0, 0, 0, 2],

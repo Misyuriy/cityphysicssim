@@ -1,7 +1,7 @@
 import random
 
 import graphics
-from graphics import Window, InputType, Color
+from graphics import Sprite, Window, InputType, Color
 import physics
 from physics import Vector2, Point2, Object
 
@@ -24,6 +24,7 @@ class Camera:
                  position: tuple | list | Point2 | Vector2 = Vector2(0, 0),
                  shape: tuple | list | Point2 | Vector2 = Vector2(0, 0)):
         self.position: Vector2 = Vector2(*position)
+        self.scale: float = 1
 
         self.shape: Vector2 = Vector2(*shape)
 
@@ -43,9 +44,22 @@ def mainloop():
     time = igtime.Time()
 
     running = True
-    objects: list[Object] = maps.test_map.get_objects()
-    roads: RoadGraph = maps.test_map.get_roads()
+    dynamic_objects: list[Object] = [
+        physics.PhysicsDynamicCircle(
+            Sprite(path='assets/images/sprites/default_sprite.png'),
+            Vector2(0, 0),
+            name='Circle1',
+            radius=64,
+            mass=1
+        )
+    ]
+    objects: list[Object] = dynamic_objects
+    roads: RoadGraph = None
 
+    dynamic_objects[0].linear_velocity = Vector2(100, 20)
+    dynamic_objects[0].angular_velocity = 200
+
+    delta = 1
     while running:
         for event in window.get_input():
             match event:
@@ -62,7 +76,11 @@ def mainloop():
                     running = False
 
         window.clear()
-        roads.render_to(window, camera)
+        if roads:
+            roads.render_to(window, camera)
+
+        for obj in dynamic_objects:
+            obj.update(delta)
 
         for obj in objects:
             obj.render_to(window, camera)
@@ -72,7 +90,7 @@ def mainloop():
                     print(obj, 'currently colliding with', obj2)
 
         window.update()
-        time.tick(settings.framerate)
+        delta = time.tick(settings.framerate)
 
 
 if __name__ == '__main__':

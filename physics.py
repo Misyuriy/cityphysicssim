@@ -1,5 +1,7 @@
 import math
 
+import settings
+
 
 class Point2:
     def __init__(self, x, y=None, polar=False):
@@ -127,9 +129,7 @@ class PhysicsDynamicCircle(Object):
                  rotation: float = 0,
                  name: str = 'PhysicsDynamicCircle',
                  radius: float = 1,
-                 mass: float = 1,
-                 linear_torque: float = 0,
-                 angular_torque: float = 0):
+                 mass: float = 1):
 
         super().__init__(sprite, position, rotation, name)
 
@@ -139,14 +139,24 @@ class PhysicsDynamicCircle(Object):
         self.linear_velocity: Vector2 = Vector2(0, 0)
         self.angular_velocity: float = 0
 
-        self.linear_torque: float = linear_torque
-        self.angular_torque: float = angular_torque
+        self.linear_torque: float = mass * settings.linear_mu
+        self.angular_torque: float = mass * settings.angular_mu
 
-        self.render_hitbox = True
+        self.render_hitbox = settings.render_hitbox
 
-    def update(self, delta, collisions: list[Object]):
-        #self.position += delta * self.linear_velocity
-        pass
+    def update(self, delta, collisions: list[Object] = None):
+        if abs(self.linear_velocity) > delta * self.linear_torque:
+            self.linear_velocity -= delta * self.linear_torque * self.linear_velocity.normalize()
+        else:
+            self.linear_velocity = Vector2(0, 0)
+
+        if self.angular_velocity > delta * self.angular_torque:
+            self.angular_velocity -= delta * self.angular_torque * self.angular_velocity / abs(self.angular_velocity)
+        else:
+            self.angular_velocity = 0
+
+        self.position += delta * Vector2(self.linear_velocity)
+        self.rotation += delta * self.angular_velocity
 
     def is_colliding_with(self, other):
         if hasattr(other, 'radius'):
