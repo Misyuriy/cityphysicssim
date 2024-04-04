@@ -1,7 +1,7 @@
 import random
 
 import graphics
-from graphics import Sprite, Window, InputType, Color
+from graphics import Sprite, Window, InputType
 import physics
 from physics import Vector2, Point2, Object
 
@@ -11,6 +11,8 @@ from city import Building, RoadGraph
 import igtime
 
 import settings
+from settings import Color
+
 import maps
 
 
@@ -22,19 +24,26 @@ class Camera:
 
     def __init__(self,
                  position: tuple | list | Point2 | Vector2 = Vector2(0, 0),
-                 shape: tuple | list | Point2 | Vector2 = Vector2(0, 0)):
+                 shape: tuple | list | Point2 | Vector2 = Vector2(0, 0),
+                 simplified: bool = False):
         self.position: Vector2 = Vector2(*position)
-        self.scale: float = 1
 
         self.shape: Vector2 = Vector2(*shape)
+
+        self.simplified: bool = simplified
+        self.simplified_scale: float = 1
 
     def get_center_position(self):
         return self.position + (0.5 * Vector2(self.shape))
 
     def get_relative_position(self, global_position: Vector2):
+        if self.simplified:
+            return (self.simplified_scale * global_position) - self.position
         return global_position - self.position
 
     def get_global_position(self, relative_position: Vector2):
+        if self.simplified:
+            return (1 / self.simplified_scale) * (relative_position + self.position)
         return relative_position + self.position
 
 
@@ -45,14 +54,24 @@ def mainloop():
 
     running = True
     dynamic_objects: list[Object] = []
-    objects: list[Object] = maps.test_map.get_objects()
-    #roads: RoadGraph = maps.test_map.get_roads()
+    objects: list[Object] = maps.test_big_map.get_objects()
+    roads: RoadGraph = maps.test_big_map.get_roads()
+
+    shift_x_hold = False
 
     delta = 1
     while running:
-        vertices = objects[0].get_vertices()
+        key_input = window.get_input()
+        if InputType.X in key_input and InputType.SHIFT in key_input:
+            if not shift_x_hold:
+                camera.simplified = not camera.simplified
+                camera.simplified_scale = 1
+                shift_x_hold = True
 
-        for event in window.get_input():
+        elif shift_x_hold:
+            shift_x_hold = False
+
+        for event in key_input:
             match event:
                 case InputType.W:
                     camera.position.y -= 2
@@ -64,16 +83,24 @@ def mainloop():
                     camera.position.x += 2
 
                 case InputType.SCROLL_UP:
-                    objects[0].rotation += 1
+                    print('SCROLL UP')
+                    if camera.simplified:
+                        camera.simplified_scale -= 0.01
                 case InputType.SCROLL_DOWN:
-                    objects[0].rotation -= 1
+                    print('SCROLL DOWN')
+                    if camera.simplified:
+                        camera.simplified_scale += 0.01
 
                 case InputType.QUIT:
                     running = False
 
-        window.clear()
-        #if roads:
-        #    roads.render_to(window, camera)
+        if camera.simplified:
+            window.fill(Color.sDEFAULT)
+        else:
+            window.fill(Color.DEFAULT)
+
+        if roads:
+            roads.render_to(window, camera)
 
         for obj in dynamic_objects:
             obj.update(delta)
@@ -84,11 +111,6 @@ def mainloop():
             for obj2 in objects:
                 if obj != obj2 and obj.is_colliding_with(obj2):
                     print(obj, 'currently colliding with', obj2)
-
-        window.render_circle(radius=10, position=camera.get_relative_position(vertices[0]), color=Color.RED)
-        window.render_circle(radius=10, position=camera.get_relative_position(vertices[1]), color=Color.GREEN)
-        window.render_circle(radius=10, position=camera.get_relative_position(vertices[2]), color=Color.BLUE)
-        window.render_circle(radius=10, position=camera.get_relative_position(vertices[3]), color=Color.YELLOW)
 
         window.update()
         delta = time.tick(settings.framerate)

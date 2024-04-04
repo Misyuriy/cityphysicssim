@@ -1,7 +1,7 @@
 import random
 
 import graphics
-from graphics import Sprite, Window, InputType, Color
+from graphics import Sprite, Window, InputType
 import physics
 from physics import Vector2, Point2, Object, intersect
 
@@ -11,6 +11,7 @@ from city import Building, RoadGraph
 import igtime
 
 import settings
+from settings import Color
 import maps
 
 from main import Camera
@@ -114,7 +115,10 @@ def mainloop():
                 case InputType.QUIT:
                     running = False
 
-        window.clear()
+        if camera.simplified:
+            window.fill(Color.sDEFAULT)
+        else:
+            window.fill(Color.DEFAULT)
 
         for obj in dynamic_objects:
             obj.update(delta)

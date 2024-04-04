@@ -1,10 +1,11 @@
 import graphics
-from graphics import Sprite, Color
+from graphics import Sprite
 
 import physics
 from physics import Point2, Vector2
 
 import settings
+from settings import Color
 
 
 class Building(physics.PhysicsStaticRect):
@@ -24,6 +25,8 @@ class Building(physics.PhysicsStaticRect):
 
     def render_to(self, window: graphics.Window, camera):
         super().render_to(window, camera)
+        if camera.simplified:
+            return
 
         floor_sprite = self.sprite
 
@@ -75,6 +78,13 @@ class RoadGraph:
                 if not (self.matrix[i][j] or self.matrix[j][i]):
                     continue
 
+                if camera.simplified:
+                    window.render_line(relative_position + (camera.simplified_scale * Vector2(self.joints[i])),
+                                       relative_position + (camera.simplified_scale * Vector2(self.joints[j])),
+                                       width=camera.simplified_scale * settings.road_size * (self.matrix[i][j] + self.matrix[j][i]),
+                                       color=Color.sROAD)
+                    continue
+
                 window.render_line(relative_position + self.joints[i],
                                    relative_position + self.joints[j],
                                    width=settings.road_size * (self.matrix[i][j] + self.matrix[j][i]),
@@ -111,4 +121,9 @@ class RoadGraph:
 
         for index, joint in enumerate(self.joints):
             max_roads = max(self.matrix[index])
-            window.render_circle(settings.road_size * max_roads, relative_position + joint, Color.ROAD)
+
+            if camera.simplified:
+                window.render_circle(camera.simplified_scale * settings.road_size * max_roads,
+                                     relative_position + (camera.simplified_scale * Vector2(joint)), Color.sVERTEX)
+            else:
+                window.render_circle(settings.road_size * max_roads, relative_position + joint, Color.ROAD)

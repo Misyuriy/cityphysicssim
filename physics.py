@@ -1,6 +1,7 @@
 import math
 
 import settings
+from settings import Color
 
 
 class Point2:
@@ -168,7 +169,6 @@ class PhysicsDynamicCircle(Object):
         self.render_hitbox = settings.render_hitbox
 
     def update(self, delta, collisions: list[Object] = None):
-
         if abs(self.linear_velocity) > delta * self.linear_torque:
             self.linear_velocity -= delta * self.linear_torque * self.linear_velocity.normalize()
         else:
@@ -262,13 +262,20 @@ class PhysicsStaticRect(Object):
         return False
 
     def render_to(self, window, camera):
+        if camera.simplified:
+            vertices = self.get_vertices()
+            vertices = [camera.get_relative_position(vertex) for vertex in vertices]
+
+            window.render_polygon(vertices, Color.sBUILDING)
+            return
+
         super().render_to(window, camera)
 
         vertices = self.get_vertices()
 
         if self.render_hitbox:
-            window.render_circle(radius=10, position=camera.get_relative_position(vertices[0]), color=(255, 0, 0))
-            window.render_circle(radius=10, position=camera.get_relative_position(vertices[1]), color=(0, 255, 0))
-            window.render_circle(radius=10, position=camera.get_relative_position(vertices[2]), color=(0, 0, 255))
-            window.render_circle(radius=10, position=camera.get_relative_position(vertices[3]), color=(255, 255, 0))
+            window.render_circle(radius=10, position=camera.get_relative_position(vertices[0]), color=Color.RED)
+            window.render_circle(radius=10, position=camera.get_relative_position(vertices[1]), color=Color.GREEN)
+            window.render_circle(radius=10, position=camera.get_relative_position(vertices[2]), color=Color.BLUE)
+            window.render_circle(radius=10, position=camera.get_relative_position(vertices[3]), color=Color.YELLOW)
 

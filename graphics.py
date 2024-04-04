@@ -3,18 +3,8 @@ import pygame
 import physics
 from physics import Vector2
 
-
-class Color:
-    WHITE = (255, 255, 255)
-    BLACK = (0, 0, 0)
-    RED = (255, 0, 0)
-    GREEN = (0, 255, 0)
-    BLUE = (0, 0, 255)
-    YELLOW = (255, 255, 0)
-
-    DEFAULT = (200, 200, 255)
-
-    ROAD = (100, 100, 100)
+import settings
+from settings import Color
 
 
 class Sprite:
@@ -58,17 +48,17 @@ class Window(object):
 
         self.pressed_keys = set()
 
-    def clear(self):
-        self.display.fill(Color.DEFAULT)
+    def render_polygon(self, vertices: list[Vector2], color: tuple | list):
+        pygame.draw.polygon(self.display, color, [list(i) for i in vertices])
 
     def _c_render_line(self, start: Vector2, end: Vector2, width: int, color: tuple | list):
         line_vector = end - start
         perpendicular = (width / 2) * Vector2(line_vector.y, -line_vector.x).normalize()
         inverse = Vector2(-perpendicular.x, -perpendicular.y)
 
-        pygame.draw.polygon(self.display, color,
-                            [list(start + perpendicular), list(start + inverse),
-                             list(end + inverse), list(end + perpendicular)])
+        self.render_polygon([start + perpendicular, start + inverse,
+                             end + inverse, end + perpendicular],
+                            color)
 
     def render(self, image: pygame.Surface, position: Vector2):
         self.display.blit(image, list(position))
@@ -120,6 +110,9 @@ class Window(object):
         if left_edge:
             self.render_line(start + inverse, end + inverse, edge_width, color, dash, gap)
 
+    def fill(self, color: tuple | list):
+        self.display.fill(color)
+
     def update(self):
         pygame.display.flip()
 
@@ -155,6 +148,9 @@ class Window(object):
 class InputType:
     QUIT = pygame.QUIT
 
+    SHIFT = pygame.K_LSHIFT
+    CTRL = pygame.K_LCTRL
+
     LMB = 1
     RMB = 3
 
@@ -162,6 +158,8 @@ class InputType:
     A = pygame.K_a
     S = pygame.K_s
     D = pygame.K_d
+
+    X = pygame.K_x
 
     SCROLL_UP = 4
     SCROLL_DOWN = 5
