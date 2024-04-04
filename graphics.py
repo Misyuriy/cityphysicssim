@@ -18,19 +18,19 @@ class Sprite:
             self.image = image
 
     def get_shape(self):
-        return self.image.get_width(), self.image.get_height()
+        return Vector2(self.image.get_width(), self.image.get_height())
 
     def get_rotated_image(self, rotation: float):
         rotated_image = pygame.transform.rotate(self.image, rotation)
         new_shape = rotated_image.get_rect(center=rotated_image.get_rect().center)
 
-        return rotated_image, new_shape
+        return rotated_image, Vector2(*new_shape)
 
     def get_scaled_image(self, new_scale: Vector2):
         scaled_image = pygame.transform.scale(self.image, list(new_scale))
         new_shape = scaled_image.get_rect(center=scaled_image.get_rect().center)
 
-        return scaled_image, new_shape
+        return scaled_image, Vector2(*new_shape)
 
 
 class Window(object):

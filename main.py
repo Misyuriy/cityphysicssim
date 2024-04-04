@@ -33,17 +33,27 @@ class Camera:
         self.simplified: bool = simplified
         self.simplified_scale: float = 1
 
+    def zoom(self, zoom_value: float):
+        self.position -= 0.5 * ((1 / (self.simplified_scale * zoom_value) * self.shape) - (1 / self.simplified_scale * self.shape))
+        self.simplified_scale *= zoom_value
+
+    def zoom_in(self, zoom_value: float):
+        self.zoom(zoom_value)
+
+    def zoom_out(self, zoom_value: float):
+        self.zoom(1 / zoom_value)
+
     def get_center_position(self):
-        return self.position + (0.5 * Vector2(self.shape))
+        return self.position + 0.5 * self.shape
 
     def get_relative_position(self, global_position: Vector2):
         if self.simplified:
-            return (self.simplified_scale * global_position) - self.position
+            return self.simplified_scale * (global_position - self.position)
         return global_position - self.position
 
     def get_global_position(self, relative_position: Vector2):
         if self.simplified:
-            return (1 / self.simplified_scale) * (relative_position + self.position)
+            return 1 / self.simplified_scale * relative_position + self.position
         return relative_position + self.position
 
 
@@ -74,22 +84,20 @@ def mainloop():
         for event in key_input:
             match event:
                 case InputType.W:
-                    camera.position.y -= 2
+                    camera.position.y -= settings.camera_speed / camera.simplified_scale
                 case InputType.A:
-                    camera.position.x -= 2
+                    camera.position.x -= settings.camera_speed / camera.simplified_scale
                 case InputType.S:
-                    camera.position.y += 2
+                    camera.position.y += settings.camera_speed / camera.simplified_scale
                 case InputType.D:
-                    camera.position.x += 2
+                    camera.position.x += settings.camera_speed / camera.simplified_scale
 
                 case InputType.SCROLL_UP:
-                    print('SCROLL UP')
                     if camera.simplified:
-                        camera.simplified_scale -= 0.01
+                        camera.zoom_in(1.05)
                 case InputType.SCROLL_DOWN:
-                    print('SCROLL DOWN')
                     if camera.simplified:
-                        camera.simplified_scale += 0.01
+                        camera.zoom_out(1.05)
 
                 case InputType.QUIT:
                     running = False

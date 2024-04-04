@@ -41,11 +41,11 @@ class Building(physics.PhysicsStaticRect):
 
         for floor in range(1, self.height):
             floor_image, floor_shape = floor_sprite.get_scaled_image(
-                (settings.parallax_scaling_step ** floor) * Vector2(*floor_sprite.get_shape())
+                (settings.parallax_scaling_step ** floor) * floor_sprite.get_shape()
             )
-            edge_position = relative_position - 0.5 * Vector2(*floor_shape)
+            edge_position = relative_position - 0.5 * floor_shape
 
-            edge_position -= floor * Vector2(parallax)
+            edge_position -= floor * parallax
 
             window.render(floor_image, edge_position)
 
@@ -54,11 +54,11 @@ class Building(physics.PhysicsStaticRect):
             roof_sprite = Sprite(image=rotated_image)
 
             roof_image, roof_shape = roof_sprite.get_scaled_image(
-                (settings.parallax_scaling_step ** self.height) * Vector2(*rotated_shape)
+                (settings.parallax_scaling_step ** self.height) * rotated_shape
             )
-            edge_position = relative_position - 0.5 * Vector2(*roof_shape)
+            edge_position = relative_position - 0.5 * roof_shape
 
-            edge_position -= self.height * Vector2(parallax)
+            edge_position -= self.height * parallax
 
             window.render(roof_image, edge_position)
 
@@ -79,8 +79,8 @@ class RoadGraph:
                     continue
 
                 if camera.simplified:
-                    window.render_line(relative_position + (camera.simplified_scale * Vector2(self.joints[i])),
-                                       relative_position + (camera.simplified_scale * Vector2(self.joints[j])),
+                    window.render_line(relative_position + (camera.simplified_scale * self.joints[i]),
+                                       relative_position + (camera.simplified_scale * self.joints[j]),
                                        width=camera.simplified_scale * settings.road_size * (self.matrix[i][j] + self.matrix[j][i]),
                                        color=Color.sROAD)
                     continue
@@ -124,6 +124,6 @@ class RoadGraph:
 
             if camera.simplified:
                 window.render_circle(camera.simplified_scale * settings.road_size * max_roads,
-                                     relative_position + (camera.simplified_scale * Vector2(joint)), Color.sVERTEX)
+                                     relative_position + (camera.simplified_scale * joint), Color.sVERTEX)
             else:
                 window.render_circle(settings.road_size * max_roads, relative_position + joint, Color.ROAD)

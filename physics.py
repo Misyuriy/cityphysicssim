@@ -62,10 +62,7 @@ class Vector2(Point2):
         return self.x * other.y - self.y * other.x
 
     def mul(self, n: int):
-        self.x *= n
-        self.y *= n
-
-        return self
+        return Vector2(self.x * n, self.y * n)
 
     def normalize(self):
         return Vector2(self.x / abs(self), self.y / abs(self))
@@ -132,11 +129,11 @@ class Object:
 
         if self.rotation:
             rotated_image, rotated_shape = self.sprite.get_rotated_image(self.rotation)
-            edge_position = render_position - 0.5 * Vector2(*rotated_shape)
+            edge_position = render_position - 0.5 * rotated_shape
 
             window.render(rotated_image, edge_position)
         else:
-            edge_position = render_position - 0.5 * Vector2(*self.sprite.get_shape())
+            edge_position = render_position - 0.5 * self.sprite.get_shape()
             window.render(self.sprite.image, edge_position)
 
     def set_position(self, new_position: tuple | list | Point2 | Vector2):
@@ -179,7 +176,7 @@ class PhysicsDynamicCircle(Object):
         else:
             self.angular_velocity = 0
 
-        self.position += delta * Vector2(self.linear_velocity)
+        self.position += delta * self.linear_velocity
         self.rotation += delta * self.angular_velocity
 
     def apply_force(self, linear_force: Vector2 = Vector2(0, 0), angular_force: float = 0):
