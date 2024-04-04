@@ -39,6 +39,13 @@ def mainloop():
             name='Circle1',
             radius=64,
             mass=5
+        ),
+        physics.PhysicsDynamicCircle(
+            Sprite(path='assets/images/sprites/default_sprite.png'),
+            Vector2(200, 200),
+            name='Circle2',
+            radius=64,
+            mass=5
         )
     ]
     objects: list[Object] = dynamic_objects

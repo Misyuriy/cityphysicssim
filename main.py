@@ -44,23 +44,14 @@ def mainloop():
     time = igtime.Time()
 
     running = True
-    dynamic_objects: list[Object] = [
-        physics.PhysicsDynamicCircle(
-            Sprite(path='assets/images/sprites/default_sprite.png'),
-            Vector2(0, 0),
-            name='Circle1',
-            radius=64,
-            mass=1
-        )
-    ]
-    objects: list[Object] = dynamic_objects
-    roads: RoadGraph = None
-
-    dynamic_objects[0].linear_velocity = Vector2(100, 20)
-    dynamic_objects[0].angular_velocity = 200
+    dynamic_objects: list[Object] = []
+    objects: list[Object] = maps.test_map.get_objects()
+    #roads: RoadGraph = maps.test_map.get_roads()
 
     delta = 1
     while running:
+        vertices = objects[0].get_vertices()
+
         for event in window.get_input():
             match event:
                 case InputType.W:
@@ -72,12 +63,17 @@ def mainloop():
                 case InputType.D:
                     camera.position.x += 2
 
+                case InputType.SCROLL_UP:
+                    objects[0].rotation += 1
+                case InputType.SCROLL_DOWN:
+                    objects[0].rotation -= 1
+
                 case InputType.QUIT:
                     running = False
 
         window.clear()
-        if roads:
-            roads.render_to(window, camera)
+        #if roads:
+        #    roads.render_to(window, camera)
 
         for obj in dynamic_objects:
             obj.update(delta)
@@ -88,6 +84,11 @@ def mainloop():
             for obj2 in objects:
                 if obj != obj2 and obj.is_colliding_with(obj2):
                     print(obj, 'currently colliding with', obj2)
+
+        window.render_circle(radius=10, position=camera.get_relative_position(vertices[0]), color=Color.RED)
+        window.render_circle(radius=10, position=camera.get_relative_position(vertices[1]), color=Color.GREEN)
+        window.render_circle(radius=10, position=camera.get_relative_position(vertices[2]), color=Color.BLUE)
+        window.render_circle(radius=10, position=camera.get_relative_position(vertices[3]), color=Color.YELLOW)
 
         window.update()
         delta = time.tick(settings.framerate)

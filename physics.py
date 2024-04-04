@@ -69,6 +69,12 @@ class Vector2(Point2):
     def normalize(self):
         return Vector2(self.x / abs(self), self.y / abs(self))
 
+    def rotate(self, degrees: float):
+        sine = math.sin(math.radians(degrees))
+        cosine = math.cos(math.radians(degrees))
+
+        return Vector2(self.x * cosine - self.y * sine, self.x * sine + self.y * cosine)
+
     def __add__(self, other):
         return Vector2(self.x + other.x, self.y + other.y)
 
@@ -145,6 +151,7 @@ class PhysicsDynamicCircle(Object):
         self.render_hitbox = settings.render_hitbox
 
     def update(self, delta, collisions: list[Object] = None):
+
         if abs(self.linear_velocity) > delta * self.linear_torque:
             self.linear_velocity -= delta * self.linear_torque * self.linear_velocity.normalize()
         else:
@@ -181,17 +188,26 @@ class PhysicsDynamicCircle(Object):
 class PhysicsStaticRect(Object):
     def __init__(self,
                  sprite,
-                 edge_position: tuple | list | Point2 | Vector2,
+                 position: tuple | list | Point2 | Vector2,
                  rotation: float = 0,
                  name: str = 'PhysicsStaticRect',
                  rect: Vector2 = None
                  ):
-        super().__init__(sprite, edge_position, rotation, name)
+        super().__init__(sprite, position, rotation, name)
 
         if rect:
             self.rect = rect
         else:
             self.rect = Vector2(*self.sprite.get_shape())
+
+    def get_vertices(self):
+        edge_position = self.position + -0.5 * self.rect.rotate(-self.rotation)
+        a = edge_position
+        b = a + Vector2(self.rect.x, 0).rotate(-self.rotation)
+        c = b + Vector2(0, self.rect.y).rotate(-self.rotation)
+        d = a + Vector2(0, self.rect.y).rotate(-self.rotation)
+
+        return a, b, c, d
 
     def is_colliding_with(self, other):
         if hasattr(other, 'radius'):

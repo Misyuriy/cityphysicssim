@@ -10,14 +10,14 @@ import settings
 class Building(physics.PhysicsStaticRect):
     def __init__(self,
                  sprite: Sprite,
-                 edge_position: tuple | list | Point2 | Vector2 = Vector2(0, 0),
+                 position: tuple | list | Point2 | Vector2 = Vector2(0, 0),
                  rotation: float = 0,
                  name: str = 'Building',
                  rect: Vector2 = None,
                  height: int = 1,
                  roof_sprite: Sprite = None
                  ):
-        super().__init__(sprite, edge_position, rotation, name, rect)
+        super().__init__(sprite, position, rotation, name, rect)
 
         self.height = height
         self.roof_sprite = roof_sprite
