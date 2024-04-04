@@ -97,6 +97,23 @@ class Vector2(Point2):
         return self.mul(other)
 
 
+def intersect(p1: Vector2, p2: Vector2, m1: Vector2, m2: Vector2):
+    p1p2 = Vector2(p1, p2)
+    p1m1 = Vector2(p1, m1)
+    p1m2 = Vector2(p1, m2)
+
+    m1m2 = Vector2(m1, m2)
+    m1p1 = Vector2(m1, p1)
+    m1p2 = Vector2(m1, p2)
+
+    if (p1p2.cross_product(p1m2) * p1p2.cross_product(p1m1) < 0
+            and
+            m1m2.cross_product(m1p2) * m1m2.cross_product(m1p1) < 0):
+        return True
+    else:
+        return False
+
+
 class Object:
     def __init__(self,
                  sprite,
@@ -173,8 +190,18 @@ class PhysicsDynamicCircle(Object):
         if hasattr(other, 'radius'):
             if self.position.dist(other.position) <= self.radius + other.radius:
                 return True
+
         elif hasattr(other, 'rect'):
-            pass # написать расчет с прямоугольником
+            a, b, c, d = other.get_vertices()
+            segments = [(a, b), (b, c), (c, d), (d, a)]
+
+            r1 = self.position
+            r2 = self.position + (self.radius * (other.position - self.position).normalize())
+
+            for segment in segments:
+                if intersect(r1, r2, segment[0], segment[1]):
+                    return True
+
         return False
 
     def render_to(self, window, camera):
@@ -200,6 +227,8 @@ class PhysicsStaticRect(Object):
         else:
             self.rect = Vector2(*self.sprite.get_shape())
 
+        self.render_hitbox = settings.render_hitbox
+
     def get_vertices(self):
         edge_position = self.position + -0.5 * self.rect.rotate(-self.rotation)
         a = edge_position
@@ -210,8 +239,36 @@ class PhysicsStaticRect(Object):
         return a, b, c, d
 
     def is_colliding_with(self, other):
+        a, b, c, d = self.get_vertices()
+        segments = [(a, b), (b, c), (c, d), (d, a)]
+
         if hasattr(other, 'radius'):
-            pass # написать расчет с радиусом
+            r1 = other.position
+            r2 = other.position + (other.radius * (self.position - other.position).normalize())
+
+            for segment in segments:
+                if intersect(r1, r2, segment[0], segment[1]):
+                    return True
+
         elif hasattr(other, 'rect'):
-            pass # написать расчет с прямоугольником
+            a2, b2, c2, d2 = other.get_vertices()
+            segments2 = [(a2, b2), (b2, c2), (c2, d2), (d2, a2)]
+
+            for segment1 in segments:
+                for segment2 in segments2:
+                    if intersect(segment1[0], segment1[1], segment2[0], segment2[1]):
+                        return True
+
         return False
+
+    def render_to(self, window, camera):
+        super().render_to(window, camera)
+
+        vertices = self.get_vertices()
+
+        if self.render_hitbox:
+            window.render_circle(radius=10, position=camera.get_relative_position(vertices[0]), color=(255, 0, 0))
+            window.render_circle(radius=10, position=camera.get_relative_position(vertices[1]), color=(0, 255, 0))
+            window.render_circle(radius=10, position=camera.get_relative_position(vertices[2]), color=(0, 0, 255))
+            window.render_circle(radius=10, position=camera.get_relative_position(vertices[3]), color=(255, 255, 0))
+
