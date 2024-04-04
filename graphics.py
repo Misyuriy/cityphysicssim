@@ -39,10 +39,12 @@ class Window(object):
             cls.instance = super(Window, cls).__new__(cls)
         return cls.instance
 
-    def __init__(self, dimensions: list[int], caption: str = None):
+    def __init__(self, shape: list[int], caption: str = None):
         pygame.init()
 
-        self.display = pygame.display.set_mode(dimensions)
+        self.display = pygame.display.set_mode(shape)
+        self.shape = shape
+
         if caption:
             pygame.display.set_caption(caption)
 
