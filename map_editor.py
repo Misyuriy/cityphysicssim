@@ -6,8 +6,8 @@ from game import Game
 
 
 def mainloop():
-    window = graphics.Window([600, 600], 'City traffic simulator')
-    game = Game(window, maps.test_map)
+    window = graphics.Window([600, 600], 'Map editor')
+    game = Game(window, maps.editor_new_map, input_handling='MAP_EDITOR')
 
     while game.running:
         game.update()

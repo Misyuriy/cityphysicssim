@@ -16,12 +16,15 @@ class Building(physics.PhysicsStaticRect):
                  name: str = 'Building',
                  rect: Vector2 = None,
                  height: int = 1,
-                 roof_sprite: Sprite = None
+                 roof_sprite: Sprite = None,
+                 simplified_color: tuple | list = Color.sBUILDING
                  ):
-        super().__init__(sprite, position, rotation, name, rect)
+        super().__init__(sprite, position, rotation, name, rect, simplified_color)
 
         self.height = height
         self.roof_sprite = roof_sprite
+
+        self.simplified_color = simplified_color
 
     def render_to(self, window: graphics.Window, camera):
         super().render_to(window, camera)
@@ -66,9 +69,15 @@ class Building(physics.PhysicsStaticRect):
 class RoadGraph:
     def __init__(self, joints: list[Vector2], matrix: list[list]):
         self.joints: list[Vector2] = joints
+
+        self.selected_joint: int = -1
         self.n_joints = len(joints)
 
         self.matrix: list[list] = matrix
+
+    def get_joint_radius(self, index: int):
+        max_roads = max(self.matrix[index])
+        return settings.road_size * max_roads
 
     def render_to(self, window: graphics.Window, camera):
         relative_position = camera.get_relative_position(Vector2(0, 0))
@@ -123,7 +132,11 @@ class RoadGraph:
             max_roads = max(self.matrix[index])
 
             if camera.simplified:
+                color = Color.sVERTEX
+                if index == self.selected_joint:
+                    color = Color.sSELECTED
+
                 window.render_circle(camera.simplified_scale * settings.road_size * max_roads,
-                                     relative_position + (camera.simplified_scale * joint), Color.sVERTEX)
+                                     camera.get_relative_position(joint), color)
             else:
-                window.render_circle(settings.road_size * max_roads, relative_position + joint, Color.ROAD)
+                window.render_circle(settings.road_size * max_roads, camera.get_relative_position(joint), Color.ROAD)

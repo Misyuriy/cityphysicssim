@@ -30,6 +30,7 @@ class Color:
     sBUILDING = (56, 71, 102)
     sROAD = (85, 110, 167)
     sVERTEX = (134, 155, 201)
+    sSELECTED = (109, 190, 185)
 
 
 # ___ Physics ______________________________

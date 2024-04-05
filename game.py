@@ -63,18 +63,21 @@ class Game:
 
     def __init__(self, window: Window, city_map: maps.Map, framerate=settings.framerate, input_handling='DEFAULT'):
         self.window = window
-        self.camera = Camera(position=[0, 0], shape=self.window.shape)
+        self.camera = Camera(position=city_map.initial_camera_position, shape=self.window.shape)
 
         self.time = igtime.Time()
         self.framerate = framerate
 
-        self.selection: Object = None
+        self.selection = None
         self.input_handler: callable
         match input_handling:
             case 'DEFAULT':
                 self.input_handler = self._handle_input_default
             case 'PHYSICS_TEST':
-                self.input_handler = self._handle_input_physics
+                self.input_handler = self._handle_input_physics_test
+            case 'MAP_EDITOR':
+                self.input_handler = self._handle_input_editor
+                self.camera.simplified = True
 
             case _:
                 raise 'invalid input handling type: "' + input_handling + '"'
@@ -118,22 +121,26 @@ class Game:
         if InputType.X in input_events and InputType.SHIFT in input_events:
             if not self.shift_x_hold:
                 self.camera.simplified = not self.camera.simplified
-                self.camera.simplified_scale = 1
+                self.camera.zoom_out(self.camera.simplified_scale)
                 self.shift_x_hold = True
 
         elif self.shift_x_hold:
             self.shift_x_hold = False
 
         for event in input_events:
+            camera_speed = settings.camera_speed
+            if InputType.SHIFT in input_events:
+                camera_speed *= 2
+
             match event:
                 case InputType.W:
-                    self.camera.position.y -= settings.camera_speed / self.camera.simplified_scale
+                    self.camera.position.y -= camera_speed / self.camera.simplified_scale
                 case InputType.A:
-                    self.camera.position.x -= settings.camera_speed / self.camera.simplified_scale
+                    self.camera.position.x -= camera_speed / self.camera.simplified_scale
                 case InputType.S:
-                    self.camera.position.y += settings.camera_speed / self.camera.simplified_scale
+                    self.camera.position.y += camera_speed / self.camera.simplified_scale
                 case InputType.D:
-                    self.camera.position.x += settings.camera_speed / self.camera.simplified_scale
+                    self.camera.position.x += camera_speed / self.camera.simplified_scale
 
                 case InputType.SCROLL_UP:
                     if self.camera.simplified:
@@ -145,7 +152,7 @@ class Game:
                 case InputType.QUIT:
                     self.running = False
 
-    def _handle_input_physics(self, input_events: list):
+    def _handle_input_physics_test(self, input_events: list):
         for event in input_events:
             match event:
                 case InputType.W:
@@ -158,7 +165,7 @@ class Game:
                     self.camera.position.x += settings.camera_speed / self.camera.simplified_scale
 
                 case InputType.LMB:
-                    new_selection = self._get_selected(self.window.get_mouse_position())
+                    new_selection = self._get_selected_physics_object(self.window.get_mouse_position())
                     if new_selection:
                         if self.selection:
                             self.selection.render_hitbox = False
@@ -198,15 +205,87 @@ class Game:
                 case InputType.QUIT:
                     self.running = False
 
-    def _get_selected(self, click: Vector2):
+    def _handle_input_editor(self, input_events: list):
+        for event in input_events:
+            camera_speed = settings.camera_speed
+            if InputType.SHIFT in input_events:
+                camera_speed *= 2
+
+            match event:
+                case InputType.W:
+                    self.camera.position.y -= camera_speed / self.camera.simplified_scale
+                case InputType.A:
+                    self.camera.position.x -= camera_speed / self.camera.simplified_scale
+                case InputType.S:
+                    self.camera.position.y += camera_speed / self.camera.simplified_scale
+                case InputType.D:
+                    self.camera.position.x += camera_speed / self.camera.simplified_scale
+
+                case InputType.LMB:
+                    click = self.window.get_mouse_position()
+
+                    new_selection = self._get_selected_physics_object(click)
+                    if not new_selection:
+                        new_selection = self._get_selected_joint(click)
+
+                    if new_selection is not None:
+                        if self.selection and isinstance(self.selection, Object):
+                            self.selection.simplified_color = self._get_color_for_object(self.selection)
+                        else:
+                            self.roads.selected_joint = -1
+
+                        self.selection = new_selection
+                        if isinstance(self.selection, Object):
+                            self.selection.simplified_color = Color.sSELECTED
+                        elif isinstance(self.selection, int):
+                            self.roads.selected_joint = self.selection
+
+                    elif self.selection:
+                        if isinstance(self.selection, Object):
+                            self.selection.simplified_color = self._get_color_for_object(self.selection)
+                        else:
+                            self.roads.selected_joint = -1
+                        self.selection = None
+
+                case InputType.RMB:
+                    global_click = self.camera.get_global_position(self.window.get_mouse_position())
+                    if isinstance(self.selection, Object):
+                        self.selection.position = global_click
+                    elif isinstance(self.selection, int):
+                        self.roads.joints[self.selection] = Vector2(global_click)
+
+                case InputType.SCROLL_UP:
+                    if isinstance(self.selection, Object) and (InputType.CTRL in input_events):
+                        if InputType.SHIFT in input_events:
+                            self.selection.rotation += 5
+                        else:
+                            self.selection.rotation += 1
+
+                    else:
+                        self.camera.zoom_in(1.05)
+
+                case InputType.SCROLL_DOWN:
+                    if isinstance(self.selection, Object) and (InputType.CTRL in input_events):
+                        if InputType.SHIFT in input_events:
+                            self.selection.rotation -= 5
+                        else:
+                            self.selection.rotation -= 1
+
+                    else:
+                        self.camera.zoom_out(1.05)
+
+                case InputType.QUIT:
+                    self.running = False
+
+    def _get_selected_physics_object(self, click: Vector2):
         global_click = self.camera.get_global_position(click)
 
         for obj in self.objects:
-            if hasattr(obj, 'radius'):
+            if isinstance(obj, physics.PhysicsDynamicCircle):
                 if obj.position.dist(global_click.x, global_click.y) <= obj.radius:
                     return obj
 
-            elif hasattr(obj, 'rect'):
+            elif isinstance(obj, physics.PhysicsStaticRect):
                 a, b, c, d = obj.get_vertices()
                 segments = [(a, b), (b, c), (c, d), (d, a)]
 
@@ -221,4 +300,17 @@ class Game:
                 if selected:
                     return obj
 
+        return None
+
+    def _get_selected_joint(self, click: Vector2):
+        global_click = self.camera.get_global_position(click)
+
+        for index, joint in enumerate(self.roads.joints):
+            radius = self.roads.get_joint_radius(index)
+            if joint.dist(global_click.x, global_click.y) <= radius:
+                return index
+
+    def _get_color_for_object(self, obj: Object):
+        if isinstance(obj, Building):
+            return Color.sBUILDING
         return None
