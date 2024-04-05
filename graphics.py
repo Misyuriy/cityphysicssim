@@ -162,9 +162,18 @@ class InputType:
     D = pygame.K_d
 
     X = pygame.K_x
+    Z = pygame.K_z
 
     SCROLL_UP = 4
     SCROLL_DOWN = 5
+
+    K1 = pygame.K_1
+    K2 = pygame.K_2
+    K4 = pygame.K_4
+    K6 = pygame.K_6
+    K8 = pygame.K_8
+
+    DELETE = pygame.K_DELETE
 
 
 DEFAULT_SPRITE = Sprite(path='assets/images/sprites/default_sprite.png')

@@ -144,10 +144,10 @@ class Game:
 
                 case InputType.SCROLL_UP:
                     if self.camera.simplified:
-                        self.camera.zoom_in(1.05)
+                        self.camera.zoom_in(settings.camera_zoom_speed)
                 case InputType.SCROLL_DOWN:
                     if self.camera.simplified:
-                        self.camera.zoom_out(1.05)
+                        self.camera.zoom_out(settings.camera_zoom_speed)
 
                 case InputType.QUIT:
                     self.running = False
@@ -206,6 +206,15 @@ class Game:
                     self.running = False
 
     def _handle_input_editor(self, input_events: list):
+        if InputType.X in input_events and InputType.SHIFT in input_events:
+            if not self.shift_x_hold:
+                self.camera.simplified = not self.camera.simplified
+                self.camera.zoom_out(self.camera.simplified_scale)
+                self.shift_x_hold = True
+
+        elif self.shift_x_hold:
+            self.shift_x_hold = False
+
         for event in input_events:
             camera_speed = settings.camera_speed
             if InputType.SHIFT in input_events:
@@ -221,31 +230,17 @@ class Game:
                 case InputType.D:
                     self.camera.position.x += camera_speed / self.camera.simplified_scale
 
-                case InputType.LMB:
-                    click = self.window.get_mouse_position()
-
-                    new_selection = self._get_selected_physics_object(click)
-                    if not new_selection:
-                        new_selection = self._get_selected_joint(click)
-
-                    if new_selection is not None:
-                        if self.selection and isinstance(self.selection, Object):
-                            self.selection.simplified_color = self._get_color_for_object(self.selection)
-                        else:
-                            self.roads.selected_joint = -1
-
-                        self.selection = new_selection
-                        if isinstance(self.selection, Object):
-                            self.selection.simplified_color = Color.sSELECTED
-                        elif isinstance(self.selection, int):
-                            self.roads.selected_joint = self.selection
-
-                    elif self.selection:
-                        if isinstance(self.selection, Object):
-                            self.selection.simplified_color = self._get_color_for_object(self.selection)
-                        else:
-                            self.roads.selected_joint = -1
+                case InputType.Z:
+                    if InputType.SHIFT in input_events and isinstance(self.selection, int):
+                        self.roads.add_joint(
+                            self.camera.get_global_position(self.window.get_mouse_position()),
+                            self.selection
+                        )
+                        self.roads.selected_joint = -1
                         self.selection = None
+
+                case InputType.LMB:
+                    self.update_selection(input_events)
 
                 case InputType.RMB:
                     global_click = self.camera.get_global_position(self.window.get_mouse_position())
@@ -262,7 +257,7 @@ class Game:
                             self.selection.rotation += 1
 
                     else:
-                        self.camera.zoom_in(1.05)
+                        self.camera.zoom_in(settings.camera_zoom_speed)
 
                 case InputType.SCROLL_DOWN:
                     if isinstance(self.selection, Object) and (InputType.CTRL in input_events):
@@ -272,10 +267,95 @@ class Game:
                             self.selection.rotation -= 1
 
                     else:
-                        self.camera.zoom_out(1.05)
+                        self.camera.zoom_out(settings.camera_zoom_speed)
+
+                case InputType.K2:
+                    if isinstance(self.selection, list):
+                        i = self.selection[0]
+                        j = self.selection[1]
+
+                        self.roads.matrix[i][j] = 1
+                        self.roads.matrix[j][i] = 1
+
+                case InputType.K4:
+                    if isinstance(self.selection, list):
+                        i = self.selection[0]
+                        j = self.selection[1]
+
+                        self.roads.matrix[i][j] = 2
+                        self.roads.matrix[j][i] = 2
+
+                case InputType.K6:
+                    if isinstance(self.selection, list):
+                        i = self.selection[0]
+                        j = self.selection[1]
+
+                        self.roads.matrix[i][j] = 3
+                        self.roads.matrix[j][i] = 3
+
+                case InputType.K8:
+                    if isinstance(self.selection, list):
+                        i = self.selection[0]
+                        j = self.selection[1]
+
+                        self.roads.matrix[i][j] = 4
+                        self.roads.matrix[j][i] = 4
+
+                case InputType.DELETE:
+                    if isinstance(self.selection, list):
+                        i = self.selection[0]
+                        j = self.selection[1]
+
+                        self.roads.matrix[i][j] = 0
+                        self.roads.matrix[j][i] = 0
 
                 case InputType.QUIT:
                     self.running = False
+
+    def update_selection(self, input_events: list):
+        click = self.window.get_mouse_position()
+
+        new_selection = self._get_selected_physics_object(click)
+        if new_selection is None:
+            new_selection = self._get_selected_joint(click)
+
+        if new_selection is not None:
+            if isinstance(self.selection, Object):
+                self.selection.simplified_color = self._get_color_for_object(self.selection)
+
+            elif (InputType.SHIFT in input_events) and self.selection != new_selection:
+                if isinstance(self.selection, int):
+                    new_selection = [self.selection, new_selection]
+
+                elif isinstance(self.selection, list) and (new_selection == self.selection[0]):
+                    new_selection = [self.selection[1], new_selection]
+                elif isinstance(self.selection, list) and (new_selection == self.selection[1]):
+                    new_selection = [self.selection[0], new_selection]
+
+                self.roads.selected_joint = -1
+                self.roads.selected_road = [-1, -1]
+
+            else:
+                self.roads.selected_joint = -1
+                self.roads.selected_road = [-1, -1]
+
+            self.selection = new_selection
+            if isinstance(self.selection, Object):
+                self.selection.simplified_color = Color.sSELECTED
+            elif isinstance(self.selection, int):
+                self.roads.selected_joint = self.selection
+            else:
+                self.roads.selected_road = self.selection
+
+        elif self.selection is not None:
+            if isinstance(self.selection, Object):
+                self.selection.simplified_color = self._get_color_for_object(self.selection)
+            else:
+                self.roads.selected_joint = -1
+                self.roads.selected_road = [-1, -1]
+            self.selection = None
+
+        print('selection updated:', self.selection)
 
     def _get_selected_physics_object(self, click: Vector2):
         global_click = self.camera.get_global_position(click)

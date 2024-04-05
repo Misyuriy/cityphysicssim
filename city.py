@@ -71,6 +71,7 @@ class RoadGraph:
         self.joints: list[Vector2] = joints
 
         self.selected_joint: int = -1
+        self.selected_road: list[int, int] = [-1, -1]
         self.n_joints = len(joints)
 
         self.matrix: list[list] = matrix
@@ -79,54 +80,23 @@ class RoadGraph:
         max_roads = max(self.matrix[index])
         return settings.road_size * max_roads
 
-    def render_to(self, window: graphics.Window, camera):
-        relative_position = camera.get_relative_position(Vector2(0, 0))
+    def add_joint(self, position: Vector2, connected_index: int, connection_to_new: int = 1, connection_from_new: int = 1):
+        self.joints.append(position)
+        self.n_joints += 1
 
+        self.matrix = [i + [0] for i in self.matrix]
+        self.matrix.append([0] * self.n_joints)
+
+        self.matrix[connected_index][-1] = connection_to_new
+        self.matrix[-1][connected_index] = connection_from_new
+
+    def render_to(self, window: graphics.Window, camera):
         for i in range(self.n_joints):
             for j in range(self.n_joints):
                 if not (self.matrix[i][j] or self.matrix[j][i]):
                     continue
 
-                if camera.simplified:
-                    window.render_line(relative_position + (camera.simplified_scale * self.joints[i]),
-                                       relative_position + (camera.simplified_scale * self.joints[j]),
-                                       width=camera.simplified_scale * settings.road_size * (self.matrix[i][j] + self.matrix[j][i]),
-                                       color=Color.sROAD)
-                    continue
-
-                window.render_line(relative_position + self.joints[i],
-                                   relative_position + self.joints[j],
-                                   width=settings.road_size * (self.matrix[i][j] + self.matrix[j][i]),
-                                   color=Color.ROAD)
-                window.render_line_edges(relative_position + self.joints[i],
-                                         relative_position + self.joints[j],
-                                         width=settings.road_size * (self.matrix[i][j] + self.matrix[j][i]),
-                                         color=Color.WHITE,
-                                         edge_width=settings.marking_size)
-
-                match self.matrix[i][j] + self.matrix[j][i]:
-                    case 1:
-                        pass
-                    case 2:
-                        window.render_line(relative_position + self.joints[i],
-                                           relative_position + self.joints[j],
-                                           width=settings.marking_size,
-                                           color=Color.WHITE,
-                                           dash=settings.dotted_marking[0],
-                                           gap=settings.dotted_marking[1])
-                    case _:
-                        window.render_line(relative_position + self.joints[i],
-                                           relative_position + self.joints[j],
-                                           width=settings.marking_size,
-                                           color=Color.WHITE)
-                        for n_roads in range(2, self.matrix[i][j] + self.matrix[j][i], 2):
-                            window.render_line_edges(relative_position + self.joints[i],
-                                                     relative_position + self.joints[j],
-                                                     width=settings.road_size * n_roads,
-                                                     color=Color.WHITE,
-                                                     edge_width=settings.marking_size,
-                                                     dash=settings.dotted_marking[0],
-                                                     gap=settings.dotted_marking[1])
+                self.render_road_to(window, camera, i, j)
 
         for index, joint in enumerate(self.joints):
             max_roads = max(self.matrix[index])
@@ -140,3 +110,51 @@ class RoadGraph:
                                      camera.get_relative_position(joint), color)
             else:
                 window.render_circle(settings.road_size * max_roads, camera.get_relative_position(joint), Color.ROAD)
+
+    def render_road_to(self, window: graphics.Window, camera, i: int, j: int):
+        relative_position = camera.get_relative_position(Vector2(0, 0))
+
+        if camera.simplified:
+            color = Color.sROAD
+            if [i, j] == self.selected_road or [j, i] == self.selected_road:
+                color = Color.sSELECTED
+            window.render_line(relative_position + (camera.simplified_scale * self.joints[i]),
+                               relative_position + (camera.simplified_scale * self.joints[j]),
+                               width=camera.simplified_scale * settings.road_size * (
+                                           self.matrix[i][j] + self.matrix[j][i]),
+                               color=color)
+            return
+
+        window.render_line(relative_position + self.joints[i],
+                           relative_position + self.joints[j],
+                           width=settings.road_size * (self.matrix[i][j] + self.matrix[j][i]),
+                           color=Color.ROAD)
+        window.render_line_edges(relative_position + self.joints[i],
+                                 relative_position + self.joints[j],
+                                 width=settings.road_size * (self.matrix[i][j] + self.matrix[j][i]),
+                                 color=Color.WHITE,
+                                 edge_width=settings.marking_size)
+
+        match self.matrix[i][j] + self.matrix[j][i]:
+            case 1:
+                pass
+            case 2:
+                window.render_line(relative_position + self.joints[i],
+                                   relative_position + self.joints[j],
+                                   width=settings.marking_size,
+                                   color=Color.WHITE,
+                                   dash=settings.dotted_marking[0],
+                                   gap=settings.dotted_marking[1])
+            case _:
+                window.render_line(relative_position + self.joints[i],
+                                   relative_position + self.joints[j],
+                                   width=settings.marking_size,
+                                   color=Color.WHITE)
+                for n_roads in range(2, self.matrix[i][j] + self.matrix[j][i], 2):
+                    window.render_line_edges(relative_position + self.joints[i],
+                                             relative_position + self.joints[j],
+                                             width=settings.road_size * n_roads,
+                                             color=Color.WHITE,
+                                             edge_width=settings.marking_size,
+                                             dash=settings.dotted_marking[0],
+                                             gap=settings.dotted_marking[1])

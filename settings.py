@@ -4,6 +4,7 @@ framerate = 60
 render_hitbox = False
 
 camera_speed = 2
+camera_zoom_speed = 1.05
 
 parallax_scaling_step = 1.05
 parallax_moving_step = 1 / 16
