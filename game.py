@@ -12,6 +12,7 @@ import settings
 from settings import Color
 
 import maps
+from maps import Blueprints, BuildingBlueprint
 
 
 class Camera:
@@ -269,6 +270,12 @@ class Game:
                     else:
                         self.camera.zoom_out(settings.camera_zoom_speed)
 
+                case InputType.K1:
+                    if self.selection is not None:
+                        continue
+
+                    self.spawn_building(Blueprints.p1_5x2)
+
                 case InputType.K2:
                     if isinstance(self.selection, list):
                         i = self.selection[0]
@@ -276,6 +283,10 @@ class Game:
 
                         self.roads.matrix[i][j] = 1
                         self.roads.matrix[j][i] = 1
+                    elif self.selection is not None:
+                        continue
+                        
+                    self.spawn_building(Blueprints.p2_5x2)
 
                 case InputType.K4:
                     if isinstance(self.selection, list):
@@ -310,7 +321,16 @@ class Game:
                         self.roads.matrix[j][i] = 0
 
                 case InputType.QUIT:
+                    self.print_map()
                     self.running = False
+
+    def _reset_selection(self):
+        if isinstance(self.selection, Object):
+            self.selection.simplified_color = self._get_color_for_object(self.selection)
+        else:
+            self.roads.selected_joint = -1
+            self.roads.selected_road = [-1, -1]
+        self.selection = None
 
     def update_selection(self, input_events: list):
         click = self.window.get_mouse_position()
@@ -348,14 +368,17 @@ class Game:
                 self.roads.selected_road = self.selection
 
         elif self.selection is not None:
-            if isinstance(self.selection, Object):
-                self.selection.simplified_color = self._get_color_for_object(self.selection)
-            else:
-                self.roads.selected_joint = -1
-                self.roads.selected_road = [-1, -1]
-            self.selection = None
+            self._reset_selection()
 
-        print('selection updated:', self.selection)
+    def spawn_building(self, blueprint: BuildingBlueprint):
+        global_mouse_position = self.camera.get_global_position(self.window.get_mouse_position())
+
+        new_building = blueprint.get_building(global_mouse_position, height=5)
+        self.static_objects.append(new_building)
+        self.objects.append(new_building)
+
+        self.selection = new_building
+        new_building.simplified_color = Color.sSELECTED
 
     def _get_selected_physics_object(self, click: Vector2):
         global_click = self.camera.get_global_position(click)
@@ -394,3 +417,34 @@ class Game:
         if isinstance(obj, Building):
             return Color.sBUILDING
         return None
+
+    def print_map(self):
+        '''
+        editor_new_map = Map(
+            buildings=[
+                Blueprints.p2_5x2.get_building(position=[300, -300], height=7),
+            ],
+            road_joints=[Vector2(0, 0), Vector2(600, 600), Vector2(0, 600), Vector2(600, 0)],
+            road_matrix=[[0, 0, 0, 2],
+                         [0, 0, 1, 0],
+                         [0, 1, 0, 1],
+                         [2, 0, 1, 0]]
+        )
+        '''
+        print('new_map = Map(')
+        print('    buildings=[')
+        for building in self.objects:
+            print(f'        Blueprints.BLUEPRINTNAME.get_building(position={building.position}, height={building.height}),')
+        print('    ],')
+
+        print('    road_joints=[', end='')
+        for joint in self.roads.joints:
+            print(f'Vector2{joint}, ', end='')
+        print('],')
+
+        print('    road_matrix=[')
+
+        for row in self.roads.matrix:
+            print(f'                 {row},')
+        print('                ]')
+        print(')')

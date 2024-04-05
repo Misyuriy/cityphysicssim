@@ -12,8 +12,8 @@ class BuildingBlueprint:
         self.sprite: Sprite = sprite
         self.roof_sprite: Sprite = roof_sprite
 
-    def get_building(self, position: tuple | list | Vector2, rotation: float = 0, height: int = 1):
-        return city.Building(sprite=self.sprite, position=position, rotation=rotation, height=height, roof_sprite=self.roof_sprite)
+    def get_building(self, position: tuple | list | Vector2, rotation: float = 0, height: int = 1, name='Building'):
+        return city.Building(sprite=self.sprite, position=position, rotation=rotation, name=name, height=height, roof_sprite=self.roof_sprite)
 
 
 class Blueprints:
