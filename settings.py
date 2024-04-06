@@ -14,6 +14,8 @@ road_size = 48
 marking_size = 4
 dotted_marking = [48, 48]
 
+map_grids = [(128, 128, 8, 0.2), (256, 256, 8, 0.4), (512, 512, 8, 0.6)] # (step_x, step_y, width, color_intensiveness)
+
 
 class Color:
     WHITE = (255, 255, 255)
@@ -28,6 +30,8 @@ class Color:
     ROAD = (100, 100, 100)
 
     sDEFAULT = (42, 50, 69)
+    sGRID = (255, 255, 255)
+
     sBUILDING = (56, 71, 102)
     sROAD = (85, 110, 167)
     sVERTEX = (134, 155, 201)

@@ -102,11 +102,21 @@ class Game:
         else:
             self.window.fill(Color.DEFAULT)
 
+        if self.camera.simplified:
+            for grid in settings.map_grids:
+                intensiveness = grid[3]
+                difference = [Color.sGRID[i] - Color.sDEFAULT[i] for i in range(3)]
+                difference = [difference[i] * intensiveness for i in range(3)]
+
+                color = [Color.sDEFAULT[i] + difference[i] for i in range(3)]
+                self._render_grid(Vector2(grid[0], grid[1]), width=grid[2], color=color)
+
         if self.roads:
             self.roads.render_to(self.window, self.camera)
 
-        for obj in self.dynamic_objects:
-            obj.update(self.delta)
+        if self.input_handler != self._handle_input_editor:
+            for obj in self.dynamic_objects:
+                obj.update(self.delta)
 
         for obj in self.objects:
             obj.render_to(self.window, self.camera)
@@ -283,7 +293,7 @@ class Game:
 
                         self.roads.matrix[i][j] = 1
                         self.roads.matrix[j][i] = 1
-                    elif self.selection is not None:
+                    if self.selection is not None:
                         continue
                         
                     self.spawn_building(Blueprints.p2_5x2)
@@ -380,6 +390,27 @@ class Game:
         self.selection = new_building
         new_building.simplified_color = Color.sSELECTED
 
+    def _render_grid(self, grid_step: Vector2, width: int, color: tuple | list = Color.sGRID):
+        x_step = (self.camera.position.x // grid_step.x) * grid_step.x
+        x_end = self.camera.position.x + (self.camera.shape.x / self.camera.simplified_scale)
+
+        y_step = (self.camera.position.y // grid_step.y) * grid_step.y
+        y_end = self.camera.position.y + (self.camera.shape.y / self.camera.simplified_scale)
+
+        while x_step <= x_end:
+            start = self.camera.get_relative_position(Vector2(x_step, self.camera.position.y))
+            end = self.camera.get_relative_position(Vector2(x_step, y_end))
+            self.window.render_line(start, end, width=width * self.camera.simplified_scale,
+                                    color=color)
+            x_step += grid_step.x
+
+        while y_step <= y_end:
+            start = self.camera.get_relative_position(Vector2(self.camera.position.x, y_step))
+            end = self.camera.get_relative_position(Vector2(x_end, y_step))
+            self.window.render_line(start, end, width=width * self.camera.simplified_scale,
+                                    color=color)
+            y_step += grid_step.y
+
     def _get_selected_physics_object(self, click: Vector2):
         global_click = self.camera.get_global_position(click)
 
@@ -419,18 +450,6 @@ class Game:
         return None
 
     def print_map(self):
-        '''
-        editor_new_map = Map(
-            buildings=[
-                Blueprints.p2_5x2.get_building(position=[300, -300], height=7),
-            ],
-            road_joints=[Vector2(0, 0), Vector2(600, 600), Vector2(0, 600), Vector2(600, 0)],
-            road_matrix=[[0, 0, 0, 2],
-                         [0, 0, 1, 0],
-                         [0, 1, 0, 1],
-                         [2, 0, 1, 0]]
-        )
-        '''
         print('new_map = Map(')
         print('    buildings=[')
         for building in self.objects:
