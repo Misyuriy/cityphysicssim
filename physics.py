@@ -216,7 +216,7 @@ class PhysicsStaticRect(Object):
                  rotation: float = 0,
                  name: str = 'PhysicsStaticRect',
                  rect: Vector2 = None,
-                 simplified_color: tuple | list = Color.sBUILDING
+                 schematic_color: tuple | list = Color.sBUILDING
                  ):
         super().__init__(sprite, position, rotation, name)
 
@@ -226,7 +226,7 @@ class PhysicsStaticRect(Object):
             self.rect = Vector2(*self.sprite.get_shape())
 
         self.render_hitbox = settings.render_hitbox
-        self.simplified_color = simplified_color
+        self.schematic_color = schematic_color
 
     def get_vertices(self, rotation_modifier: float = 0, scale_modifier: float = 1):
         edge_position = self.position + -0.5 * scale_modifier * self.rect.rotate(-self.rotation)
@@ -261,11 +261,11 @@ class PhysicsStaticRect(Object):
         return False
 
     def render_to(self, window, camera):
-        if camera.simplified:
+        if camera.schematic:
             vertices = self.get_vertices()
             vertices = [camera.get_relative_position(vertex) for vertex in vertices]
 
-            window.render_polygon(vertices, self.simplified_color)
+            window.render_polygon(vertices, self.schematic_color)
             return
 
         super().render_to(window, camera)

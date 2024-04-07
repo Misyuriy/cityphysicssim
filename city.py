@@ -17,18 +17,18 @@ class Building(physics.PhysicsStaticRect):
                  rect: Vector2 = None,
                  height: int = 1,
                  roof_sprite: Sprite = None,
-                 simplified_color: tuple | list = Color.sBUILDING
+                 schematic_color: tuple | list = Color.sBUILDING
                  ):
-        super().__init__(sprite, position, rotation, name, rect, simplified_color)
+        super().__init__(sprite, position, rotation, name, rect, schematic_color)
 
         self.height = height
         self.roof_sprite = roof_sprite
 
-        self.simplified_color = simplified_color
+        self.schematic_color = schematic_color
 
     def render_to(self, window: graphics.Window, camera):
         super().render_to(window, camera)
-        if camera.simplified:
+        if camera.schematic:
             return
 
         floor_sprite = self.sprite
@@ -67,7 +67,7 @@ class Building(physics.PhysicsStaticRect):
 
 
 class RoadGraph:
-    def __init__(self, joints: list[Vector2], matrix: list[list]):
+    def __init__(self, joints: list[Vector2], matrix: list[list], color_variant: int = 0):
         self.joints: list[Vector2] = joints
 
         self.selected_joint: int = -1
@@ -75,6 +75,22 @@ class RoadGraph:
         self.n_joints = len(joints)
 
         self.matrix: list[list] = matrix
+
+        self.s_joint_color: tuple
+        self.s_road_color: tuple
+        self.road_color: tuple
+
+        match color_variant:
+            case 0:
+                self.s_joint_color = Color.sVERTEX
+                self.s_road_color = Color.sROAD
+                self.road_color = Color.DARK_ASPHALT
+            case 1:
+                self.s_joint_color = Color.sSIDEWALK_VERTEX
+                self.s_road_color = Color.sSIDEWALK
+                self.road_color = Color.ASPHALT
+            case _:
+                raise 'invalid color variant for RoadGraph: ' + str(color_variant)
 
     def get_joint_radius(self, index: int):
         max_roads = max(self.matrix[index])
@@ -101,26 +117,26 @@ class RoadGraph:
         for index, joint in enumerate(self.joints):
             max_roads = max(self.matrix[index])
 
-            if camera.simplified:
-                color = Color.sVERTEX
+            if camera.schematic:
+                color = self.s_joint_color
                 if index == self.selected_joint:
                     color = Color.sSELECTED
 
-                window.render_circle(camera.simplified_scale * settings.road_size * max_roads,
+                window.render_circle(camera.schematic_scale * settings.road_size * max_roads,
                                      camera.get_relative_position(joint), color)
             else:
-                window.render_circle(settings.road_size * max_roads, camera.get_relative_position(joint), Color.ROAD)
+                window.render_circle(settings.road_size * max_roads, camera.get_relative_position(joint), self.road_color)
 
     def render_road_to(self, window: graphics.Window, camera, i: int, j: int):
         relative_position = camera.get_relative_position(Vector2(0, 0))
 
-        if camera.simplified:
-            color = Color.sROAD
+        if camera.schematic:
+            color = self.s_road_color
             if [i, j] == self.selected_road or [j, i] == self.selected_road:
                 color = Color.sSELECTED
-            window.render_line(relative_position + (camera.simplified_scale * self.joints[i]),
-                               relative_position + (camera.simplified_scale * self.joints[j]),
-                               width=camera.simplified_scale * settings.road_size * (
+            window.render_line(relative_position + (camera.schematic_scale * self.joints[i]),
+                               relative_position + (camera.schematic_scale * self.joints[j]),
+                               width=camera.schematic_scale * settings.road_size * (
                                            self.matrix[i][j] + self.matrix[j][i]),
                                color=color)
             return
@@ -128,11 +144,14 @@ class RoadGraph:
         window.render_line(relative_position + self.joints[i],
                            relative_position + self.joints[j],
                            width=settings.road_size * (self.matrix[i][j] + self.matrix[j][i]),
-                           color=Color.ROAD)
+                           color=self.road_color)
+        if self.road_color == Color.ASPHALT:
+            return
+
         window.render_line_edges(relative_position + self.joints[i],
                                  relative_position + self.joints[j],
                                  width=settings.road_size * (self.matrix[i][j] + self.matrix[j][i]),
-                                 color=Color.WHITE,
+                                 color=Color.MARKING_WHITE,
                                  edge_width=settings.marking_size)
 
         match self.matrix[i][j] + self.matrix[j][i]:
@@ -142,19 +161,19 @@ class RoadGraph:
                 window.render_line(relative_position + self.joints[i],
                                    relative_position + self.joints[j],
                                    width=settings.marking_size,
-                                   color=Color.WHITE,
+                                   color=Color.MARKING_WHITE,
                                    dash=settings.dotted_marking[0],
                                    gap=settings.dotted_marking[1])
             case _:
                 window.render_line(relative_position + self.joints[i],
                                    relative_position + self.joints[j],
                                    width=settings.marking_size,
-                                   color=Color.WHITE)
+                                   color=Color.MARKING_WHITE)
                 for n_roads in range(2, self.matrix[i][j] + self.matrix[j][i], 2):
                     window.render_line_edges(relative_position + self.joints[i],
                                              relative_position + self.joints[j],
                                              width=settings.road_size * n_roads,
-                                             color=Color.WHITE,
+                                             color=Color.MARKING_WHITE,
                                              edge_width=settings.marking_size,
                                              dash=settings.dotted_marking[0],
                                              gap=settings.dotted_marking[1])
