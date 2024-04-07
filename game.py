@@ -166,15 +166,19 @@ class Game:
 
     def _handle_input_physics_test(self, input_events: list):
         for event in input_events:
+            camera_speed = settings.camera_speed
+            if InputType.SHIFT in input_events:
+                camera_speed *= 2
+
             match event:
                 case InputType.W:
-                    self.camera.position.y -= settings.camera_speed / self.camera.schematic_scale
+                    self.camera.position.y -= camera_speed / self.camera.schematic_scale
                 case InputType.A:
-                    self.camera.position.x -= settings.camera_speed / self.camera.schematic_scale
+                    self.camera.position.x -= camera_speed / self.camera.schematic_scale
                 case InputType.S:
-                    self.camera.position.y += settings.camera_speed / self.camera.schematic_scale
+                    self.camera.position.y += camera_speed / self.camera.schematic_scale
                 case InputType.D:
-                    self.camera.position.x += settings.camera_speed / self.camera.schematic_scale
+                    self.camera.position.x += camera_speed / self.camera.schematic_scale
 
                 case InputType.LMB:
                     new_selection = self._get_selected_physics_object(self.window.get_mouse_position())
@@ -192,7 +196,9 @@ class Game:
                 case InputType.RMB:
                     if self.selection:
                         global_click = self.camera.get_global_position(self.window.get_mouse_position())
-                        if hasattr(self.selection, 'linear_velocity'):
+                        if hasattr(self.selection, 'desired_velocity'):
+                            self.selection.set_desired_velocity(global_click - self.selection.position)
+                        elif hasattr(self.selection, 'linear_velocity'):
                             self.selection.apply_force(linear_force=global_click - self.selection.position)
                         else:
                             self.selection.position = global_click
@@ -203,16 +209,16 @@ class Game:
                 case InputType.SCROLL_UP:
                     if self.selection:
                         if hasattr(self.selection, 'angular_velocity'):
-                            self.selection.apply_force(angular_force=50)
+                            self.selection.apply_force(angular_force=-50)
                         else:
-                            self.selection.rotation += 5
+                            self.selection.rotation -= 5
 
                 case InputType.SCROLL_DOWN:
                     if self.selection:
                         if hasattr(self.selection, 'angular_velocity'):
-                            self.selection.apply_force(angular_force=-50)
+                            self.selection.apply_force(angular_force=50)
                         else:
-                            self.selection.rotation -= 5
+                            self.selection.rotation += 5
 
                 case InputType.QUIT:
                     self.running = False
@@ -267,9 +273,9 @@ class Game:
                 case InputType.SCROLL_UP:
                     if isinstance(self.selection, Object) and (InputType.CTRL in input_events):
                         if InputType.SHIFT in input_events:
-                            self.selection.rotation += 5
+                            self.selection.rotation -= 5
                         else:
-                            self.selection.rotation += 1
+                            self.selection.rotation -= 1
 
                     else:
                         self.camera.zoom_in(settings.camera_zoom_speed)
@@ -277,9 +283,9 @@ class Game:
                 case InputType.SCROLL_DOWN:
                     if isinstance(self.selection, Object) and (InputType.CTRL in input_events):
                         if InputType.SHIFT in input_events:
-                            self.selection.rotation -= 5
+                            self.selection.rotation += 5
                         else:
-                            self.selection.rotation -= 1
+                            self.selection.rotation += 1
 
                     else:
                         self.camera.zoom_out(settings.camera_zoom_speed)
@@ -425,11 +431,11 @@ class Game:
         global_click = self.camera.get_global_position(click)
 
         for obj in self.objects:
-            if isinstance(obj, physics.PhysicsDynamicCircle):
+            if hasattr(obj, 'radius'):
                 if obj.position.dist(global_click.x, global_click.y) <= obj.radius:
                     return obj
 
-            elif isinstance(obj, physics.PhysicsStaticRect):
+            elif hasattr(obj, 'rect'):
                 a, b, c, d = obj.get_vertices()
                 segments = [(a, b), (b, c), (c, d), (d, a)]
 

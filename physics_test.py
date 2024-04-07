@@ -7,7 +7,7 @@ from game import Game
 
 def mainloop():
     window = graphics.Window([600, 600], 'Physics test')
-    game = Game(window, maps.test_big_map, input_handling='PHYSICS_TEST')
+    game = Game(window, maps.physics_test_map, input_handling='PHYSICS_TEST')
 
     while game.running:
         game.update()

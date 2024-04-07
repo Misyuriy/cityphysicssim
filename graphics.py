@@ -21,7 +21,7 @@ class Sprite:
         return Vector2(self.image.get_width(), self.image.get_height())
 
     def get_rotated_image(self, rotation: float):
-        rotated_image = pygame.transform.rotate(self.image, rotation)
+        rotated_image = pygame.transform.rotate(self.image, -rotation)
         new_shape = rotated_image.get_rect(center=rotated_image.get_rect().center)
 
         return rotated_image, Vector2(*new_shape)

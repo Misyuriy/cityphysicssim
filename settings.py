@@ -2,6 +2,7 @@ framerate = 60
 
 # ___ Rendering ____________________________
 render_hitbox = False
+render_velocities = True
 
 camera_speed = 2
 camera_zoom_speed = 1.05
