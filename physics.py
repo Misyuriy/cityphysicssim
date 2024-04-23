@@ -300,7 +300,7 @@ class PhysicsDynamicRect(PhysicsStaticRect):
                  sprite,
                  position: tuple | list | Point2 | Vector2,
                  rotation: float = 0,
-                 name: str = 'PhysicsDynamicCircle',
+                 name: str = 'PhysicsDynamicRect',
                  rect: Vector2 = None,
                  mass: float = 1,
                  schematic_color: tuple | list = Color.sBUILDING
@@ -342,7 +342,7 @@ class PhysicsCircleAgent(PhysicsDynamicCircle):
                  rotation: float = 0,
                  linear_acceleration: float = 1,
                  angular_acceleration: float = 1,
-                 name: str = 'PhysicsDynamicCircle',
+                 name: str = 'PhysicsCircleAgent',
                  radius: float = None,
                  mass: float = 1,
                  schematic_color: tuple | list = Color.sBUILDING
@@ -357,7 +357,7 @@ class PhysicsCircleAgent(PhysicsDynamicCircle):
         self.render_velocities = settings.render_velocities
 
     def update(self, delta, collisions: list[Object] = None):
-        desired_angular_velocity = self.desired_velocity.get_rotation() - self.rotation
+        desired_angular_velocity = simplify_angle(self.desired_velocity.get_rotation() - self.rotation)
 
         correction_angular_velocity = desired_angular_velocity - self.angular_velocity
         if abs(correction_angular_velocity) > self.angular_acceleration * delta:
@@ -402,7 +402,7 @@ class PhysicsRectAgent(PhysicsDynamicRect):
                  rotation: float = 0,
                  linear_acceleration: float = 1,
                  angular_acceleration: float = 1,
-                 name: str = 'PhysicsDynamicCircle',
+                 name: str = 'PhysicsRectAgent',
                  rect: Vector2 = None,
                  mass: float = 1,
                  schematic_color: tuple | list = Color.sBUILDING
@@ -444,17 +444,17 @@ class PhysicsRectAgent(PhysicsDynamicRect):
             start = camera.get_relative_position(self.position)
 
             if abs(self.desired_velocity):
-                end = start + self.desired_velocity
+                end = start + camera.schematic_scale * self.desired_velocity
                 window.render_line(start, end, color=Color.RED)
 
                 projection_length = -self.desired_velocity.rotate(-self.rotation + 90).x
                 projection = Vector2(0, projection_length).rotate(self.rotation)
-                end = start + projection
+                end = start + camera.schematic_scale * projection
                 window.render_line(start, end, color=Color.GREEN)
 
             if abs(self.linear_velocity):
-                end = start + self.linear_velocity
+                end = start + camera.schematic_scale * self.linear_velocity
                 window.render_line(start, end, color=Color.BLACK)
 
-                end = start + Vector2(0, 64).rotate(self.rotation)
+                end = start + camera.schematic_scale * Vector2(0, 64).rotate(self.rotation)
                 window.render_line(start, end, color=Color.YELLOW)

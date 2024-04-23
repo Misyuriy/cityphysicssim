@@ -4,7 +4,7 @@ import physics
 from physics import Vector2, Point2, Object, intersect
 
 import city
-from city import Building, RoadGraph
+from city import Building, RoadGraph, CityPathfinding
 
 import igtime
 
@@ -83,11 +83,16 @@ class Game:
             case _:
                 raise 'invalid input handling type: "' + input_handling + '"'
 
-        self.dynamic_objects: list[Object] = city_map.get_dynamic_objects()
-        self.static_objects: list[Object] = city_map.get_static_objects()
-        self.objects: list[Object] = city_map.get_objects()
-        self.roads: RoadGraph = city_map.get_roads()
-        self.sidewalks: RoadGraph = city_map.get_sidewalks()
+        self.objects = city_map.get_objects()
+        self.roads = city_map.get_roads()
+        self.sidewalks = city_map.get_sidewalks()
+
+        self.city = CityPathfinding(
+            city_map.get_dynamic_objects(),
+            city_map.get_static_objects(),
+            self.roads,
+            self.sidewalks
+        )
 
         self.shift_x_hold = False
 
@@ -115,16 +120,11 @@ class Game:
         self.sidewalks.render_to(self.window, self.camera)
         self.roads.render_to(self.window, self.camera)
 
-        if self.input_handler != self._handle_input_editor:
-            for obj in self.dynamic_objects:
-                obj.update(self.delta)
+        #if self.input_handler != self._handle_input_editor:
+        self.city.update(self.delta)
 
         for obj in self.objects:
             obj.render_to(self.window, self.camera)
-
-            for obj2 in self.objects:
-                if obj != obj2 and obj.is_colliding_with(obj2):
-                    pass # will implement collision response later
 
         self.window.update()
         self.delta = self.time.tick(self.framerate)
@@ -196,7 +196,9 @@ class Game:
                 case InputType.RMB:
                     if self.selection:
                         global_click = self.camera.get_global_position(self.window.get_mouse_position())
-                        if hasattr(self.selection, 'desired_velocity'):
+                        if hasattr(self.selection, 'path'):
+                            self.selection.set_path(self.selection.path + [global_click])
+                        elif hasattr(self.selection, 'desired_velocity'):
                             self.selection.set_desired_velocity(global_click - self.selection.position)
                         elif hasattr(self.selection, 'linear_velocity'):
                             self.selection.apply_force(linear_force=global_click - self.selection.position)
@@ -264,11 +266,15 @@ class Game:
 
                 case InputType.RMB:
                     global_click = self.camera.get_global_position(self.window.get_mouse_position())
-                    if isinstance(self.selection, Object):
+                    if hasattr(self.selection, 'path'):
+                        if (not self.selection.path) or self.selection.path[-1].dist(global_click.x, global_click.y) >= settings.path_min_distance:
+                            self.selection.set_path(self.selection.path + [global_click])
+
+                    elif isinstance(self.selection, Object):
                         self.selection.position = global_click
                     elif isinstance(self.selection, int):
                         selected_graph = self._get_selected_graph()
-                        selected_graph.joints[self.selection] = Vector2(global_click)
+                        selected_graph.set_joint_position(self.selection, Vector2(global_click))
 
                 case InputType.SCROLL_UP:
                     if isinstance(self.selection, Object) and (InputType.CTRL in input_events):
@@ -397,7 +403,7 @@ class Game:
             return
 
         selected_graph = self._get_selected_graph()
-        if selected_graph != self.roads:
+        if selected_graph != self.roads and (width != 2):
             return
 
         i = self.selection[0]
@@ -483,7 +489,7 @@ class Game:
     def print_map(self):
         print('new_map = Map(')
         print('    buildings=[')
-        for building in self.objects:
+        for building in self.static_objects:
             int_position = Vector2(int(building.position.x), int(building.position.y))
             print(f'        Blueprints.BLUEPRINTNAME.get_building(position={int_position}, rotation={int(building.rotation)}, height={building.height}),')
         print('    ],')

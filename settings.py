@@ -10,11 +10,6 @@ camera_zoom_speed = 1.05
 parallax_scaling_step = 1.05
 parallax_moving_step = 1 / 16
 
-road_size = 48
-
-marking_size = 4
-dotted_marking = [48, 48]
-
 map_grids = [(100, 100, 5, 0.1), (500, 500, 5, 0.2), (1000, 1000, 5, 0.4)] # (step_x, step_y, width, color_intensiveness)
 
 
@@ -40,13 +35,28 @@ class Color:
 
     sSIDEWALK = (226, 226, 189)
     sSIDEWALK_VERTEX = (245, 245, 229)
-    
+
     sBUILDING = (189, 212, 226)
+    sCAR = (174, 221, 174)
+
     sROAD = (226, 189, 189)
     sVERTEX = (245, 229, 229)
+
     sSELECTED = (189, 226, 213)
+
+
+# ___ City ____________________________
+road_size = 72
+sidewalk_size = 48
+
+marking_size = 4
+dotted_marking = [48, 48]
 
 
 # ___ Physics ______________________________
 linear_mu = 1
 angular_mu = 1
+
+
+# ___ Pathfinding __________________________
+path_min_distance = 128

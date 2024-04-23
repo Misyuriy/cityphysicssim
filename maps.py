@@ -13,10 +13,39 @@ class BuildingBlueprint:
         self.roof_sprite: Sprite = roof_sprite
 
     def get_building(self, position: tuple | list | Vector2, rotation: float = 0, height: int = 1, name='Building'):
-        return city.Building(sprite=self.sprite, position=position, rotation=rotation, name=name, height=height, roof_sprite=self.roof_sprite)
+        return city.Building(
+            sprite=self.sprite,
+            position=position,
+            rotation=rotation,
+            name=name,
+            height=height,
+            roof_sprite=self.roof_sprite
+        )
+
+
+class CarBlueprint:
+    def __init__(self, sprite: Sprite, mass: float, max_speed: float, linear_acceleration: float = 100, angular_acceleration: float = 60):
+        self.sprite: Sprite = sprite
+        self.linear_acceleration = linear_acceleration
+        self.angular_acceleration = angular_acceleration
+        self.mass = mass
+        self.max_speed = max_speed
+
+    def get_car(self, position: tuple | list | Vector2, rotation: float = 0, name='Building'):
+        return city.Car(
+            sprite=self.sprite,
+            position=position,
+            rotation=rotation,
+            linear_acceleration=self.linear_acceleration,
+            angular_acceleration=self.angular_acceleration,
+            name=name,
+            mass=self.mass,
+            max_speed=self.max_speed
+        )
 
 
 class Blueprints:
+    # Buildings:
     t1_4x1 = BuildingBlueprint(
         Sprite(path='assets/images/sprites/buildings/test_building.png'),
         Sprite(path='assets/images/sprites/buildings/test_roof.png'))
@@ -32,6 +61,13 @@ class Blueprints:
     p1_11x2 = BuildingBlueprint(
         Sprite(path='assets/images/sprites/buildings/panel_long_building.png'),
         Sprite(path='assets/images/sprites/buildings/panel_long_roof.png'))
+
+    # Cars:
+    tt_1 = CarBlueprint(
+        Sprite(path='assets/images/sprites/cars/test_truck.png'),
+        mass=8,
+        max_speed=200
+    )
 
 
 class Map:
@@ -74,15 +110,13 @@ class Map:
 
 physics_test_map = Map(
     buildings=[
-        Blueprints.p2_5x2.get_building(position=[0, 0], height=7),
     ],
     road_joints=[],
     road_matrix=[],
     sidewalk_joints=[],
     sidewalk_matrix=[],
     other_dynamic_objects=[
-        physics.PhysicsRectAgent(graphics.DEFAULT_SPRITE, (500, 500), linear_acceleration=100, angular_acceleration=60, mass=5),
-        physics.PhysicsCircleAgent(graphics.DEFAULT_SPRITE, (100, 500), linear_acceleration=100, angular_acceleration=60, mass=5)
+        city.Car(graphics.DEFAULT_SPRITE, (-900, -100), linear_acceleration=100, angular_acceleration=60, mass=5, max_speed=200),
     ]
 )
 
@@ -125,5 +159,8 @@ editor_new_map = Map(
                  [1, 0, 1, 0],
                  [0, 1, 0, 0],
                  [1, 0, 0, 0],
-                ]
+                ],
+    other_dynamic_objects=[
+        Blueprints.tt_1.get_car(position=(-900, -100))
+    ]
 )
