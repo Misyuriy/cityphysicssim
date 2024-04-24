@@ -1,3 +1,5 @@
+import random
+
 import city
 
 import graphics
@@ -24,8 +26,10 @@ class BuildingBlueprint:
 
 
 class CarBlueprint:
-    def __init__(self, sprite: Sprite, mass: float, max_speed: float, linear_acceleration: float = 100, angular_acceleration: float = 60):
+    def __init__(self, sprite: Sprite, mass: float, max_speed: float, crashed_sprite: Sprite = None, linear_acceleration: float = 100, angular_acceleration: float = 60):
         self.sprite: Sprite = sprite
+        self.crashed_sprite: Sprite = crashed_sprite
+
         self.linear_acceleration = linear_acceleration
         self.angular_acceleration = angular_acceleration
         self.mass = mass
@@ -40,7 +44,8 @@ class CarBlueprint:
             angular_acceleration=self.angular_acceleration,
             name=name,
             mass=self.mass,
-            max_speed=self.max_speed
+            max_speed=self.max_speed,
+            crashed_sprite=self.crashed_sprite
         )
 
 
@@ -67,6 +72,7 @@ class Blueprints:
         Sprite(path='assets/images/sprites/cars/test_truck.png'),
         mass=8,
         max_speed=200,
+        crashed_sprite=Sprite(path='assets/images/sprites/cars/test_truck_crashed.png'),
         linear_acceleration=200,
         angular_acceleration=120
     )
@@ -81,7 +87,8 @@ class Map:
                  sidewalk_matrix: list[list],
                  initial_camera_position: Vector2 = Vector2(0, 0),
                  other_static_objects: list[Object] = [],
-                 other_dynamic_objects: list[Object] = []):
+                 other_dynamic_objects: list[Object] = [],
+                 car_blueprint_set: list[CarBlueprint] = []):
         self.buildings: list[city.Building] = buildings
         self.other_static_objects: list[Object] = other_static_objects
         self.other_dynamic_objects: list[Object] = other_dynamic_objects
@@ -91,6 +98,8 @@ class Map:
 
         self.sidewalk_joints: list[Vector2] = sidewalk_joints
         self.sidewalk_matrix: list[list] = sidewalk_matrix
+
+        self.car_blueprint_set: list[CarBlueprint] = car_blueprint_set
 
         self.initial_camera_position = initial_camera_position
 
@@ -108,6 +117,15 @@ class Map:
 
     def get_sidewalks(self):
         return city.RoadGraph(self.sidewalk_joints, self.sidewalk_matrix, color_variant=1)
+
+    def spawn_cars(self, density: float = 1):
+        if not self.car_blueprint_set:
+            return
+
+        for joint in self.road_joints:
+            if random.uniform(0, 1) <= density: # if density = 1, cars will spawn at all joints
+                blueprint_choice = random.choice(self.car_blueprint_set)
+                self.other_dynamic_objects.append(blueprint_choice.get_car(position=joint))
 
 
 physics_test_map = Map(
@@ -162,8 +180,7 @@ editor_new_map = Map(
                  [0, 1, 0, 0],
                  [1, 0, 0, 0],
                 ],
-    other_dynamic_objects=[
-        Blueprints.tt_1.get_car(position=(-900, -100)),
-        Blueprints.tt_1.get_car(position=(-900, -1050))
+    car_blueprint_set=[
+        Blueprints.tt_1
     ]
 )

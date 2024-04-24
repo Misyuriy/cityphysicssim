@@ -2,7 +2,7 @@ framerate = 60
 
 # ___ Rendering ____________________________
 render_hitbox = False
-render_velocities = True
+render_velocities = False
 
 camera_speed = 2
 camera_zoom_speed = 1.05
@@ -51,6 +51,8 @@ sidewalk_size = 48
 
 marking_size = 4
 dotted_marking = [48, 48]
+
+car_spawn_density = 1
 
 
 # ___ Physics ______________________________

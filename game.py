@@ -83,6 +83,8 @@ class Game:
             case _:
                 raise 'invalid input handling type: "' + input_handling + '"'
 
+        city_map.spawn_cars(density=settings.car_spawn_density)
+
         self.objects = city_map.get_objects()
         self.roads = city_map.get_roads()
         self.sidewalks = city_map.get_sidewalks()

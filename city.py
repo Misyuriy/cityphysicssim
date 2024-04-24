@@ -261,7 +261,7 @@ class RoadGraph:
 
 class Car(physics.PhysicsRectAgent):
     def __init__(self,
-                 sprite,
+                 sprite: Sprite,
                  position: tuple | list | Point2 | Vector2,
                  rotation: float = 0,
                  linear_acceleration: float = 0,
@@ -271,6 +271,7 @@ class Car(physics.PhysicsRectAgent):
                  mass: float = 1,
                  max_speed: float = 0,
                  turning_margin: float = 0.5,
+                 crashed_sprite: Sprite = None,
                  schematic_color: tuple | list = Color.sCAR
                  ):
         super().__init__(sprite, position, rotation, linear_acceleration, angular_acceleration, name, radius, mass, schematic_color)
@@ -282,26 +283,30 @@ class Car(physics.PhysicsRectAgent):
         self.path_min_distance: float = settings.path_min_distance
         self.turning_margin = turning_margin
 
+        self.crashed_sprite = crashed_sprite
+
     def update(self, delta, collisions: list[Object] = None):
-        if self.path and self.position.dist(self.path[0].x, self.path[0].y) <= self.path_min_distance:
-            self.previous_vertex = self.path.pop(0)
+        if self.active:
+            if self.path and self.position.dist(self.path[0].x, self.path[0].y) <= self.path_min_distance:
+                self.previous_vertex = self.path.pop(0)
 
-        #if self.path:
-        #    road_vector = self.path[0] - self.previous_vertex
+            #if self.path:
+            #    road_vector = self.path[0] - self.previous_vertex
 
-        if not self.path:
-            self.desired_velocity = Vector2(0, 0)
-        elif len(self.path) == 1:
-            self.desired_velocity = self.path[0] - self.position
-        else:
-            path_left = self.position.dist(self.path[0].x, self.path[1].x) / self.path[0].dist(self.previous_vertex.x, self.previous_vertex.y)
+            if not self.path:
+                self.desired_velocity = Vector2(0, 0)
+            elif len(self.path) == 1:
+                self.desired_velocity = self.path[0] - self.position
+            else:
+                path_left = self.position.dist(self.path[0].x, self.path[1].x) / self.path[0].dist(self.previous_vertex.x, self.previous_vertex.y)
 
-            self.desired_velocity = self.path[0] - self.position
-            if path_left <= self.turning_margin:
-                self.desired_velocity += (self.turning_margin - path_left) * (self.path[1] - self.position)
+                self.desired_velocity = self.path[0] - self.position
+                if path_left <= self.turning_margin:
+                    self.desired_velocity += (self.turning_margin - path_left) * (self.path[1] - self.position)
 
-        if abs(self.desired_velocity) > self.allowed_speed:
-            self.desired_velocity = self.allowed_speed * self.desired_velocity.normalize()
+            if abs(self.desired_velocity) > self.allowed_speed:
+                self.desired_velocity = self.allowed_speed * self.desired_velocity.normalize()
+
         super().update(delta, collisions)
 
     def set_allowed_speed(self, new_allowed_speed: float):
@@ -312,6 +317,14 @@ class Car(physics.PhysicsRectAgent):
 
     def set_path(self, new_path: list[Vector2]):
         self.path = new_path
+
+    def crash(self):
+        self.active = False
+        self.linear_velocity = Vector2(0, 0)
+        self.angular_velocity = 0
+
+        if self.crashed_sprite:
+            self.sprite = self.crashed_sprite
 
     def render_to(self, window, camera):
         super().render_to(window, camera)
@@ -344,7 +357,7 @@ class CityPathfinding:
 
     def update(self, delta: float):
         for agent in self.agents:
-            if not agent.path:
+            if (not agent.path) and agent.active:
                 if isinstance(agent, Car):
                     self._set_agent_random_path(agent, self.roads)
 
@@ -354,14 +367,10 @@ class CityPathfinding:
             for obj2 in self.objects:
                 if obj != obj2 and obj.is_colliding_with(obj2):
                     if hasattr(obj, 'active'):
-                        obj.active = False
-                        obj.linear_velocity = 0
-                        obj.angular_velocity = 0
+                        obj.crash()
 
                     if hasattr(obj2, 'active'):
-                        obj2.active = False
-                        obj.linear_velocity = 0
-                        obj.angular_velocity = 0
+                        obj2.crash()
 
     def _set_agent_random_path(self, agent: Object, graph: RoadGraph):
         closest = graph.get_closest_joint_to(agent.position)
