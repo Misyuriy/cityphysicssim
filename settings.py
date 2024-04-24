@@ -46,7 +46,7 @@ class Color:
 
 
 # ___ City ____________________________
-road_size = 72
+road_size = 80
 sidewalk_size = 48
 
 marking_size = 4

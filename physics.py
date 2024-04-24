@@ -116,6 +116,9 @@ def intersect(p1: Vector2, p2: Vector2, m1: Vector2, m2: Vector2):
 
 
 def simplify_angle(angle: float):
+    if angle == 0:
+        return 0
+
     angle = (angle / abs(angle)) * (abs(angle) % 360)
     if abs(angle) > 180:
         angle = -(angle / abs(angle)) * (360 - abs(angle))
@@ -353,22 +356,24 @@ class PhysicsCircleAgent(PhysicsDynamicCircle):
         self.angular_acceleration: float = angular_acceleration
 
         self.desired_velocity: Vector2 = Vector2(0, 0)
+        self.active: bool = True
 
-        self.render_velocities = settings.render_velocities
+        self.render_velocities: bool = settings.render_velocities
 
     def update(self, delta, collisions: list[Object] = None):
-        desired_angular_velocity = simplify_angle(self.desired_velocity.get_rotation() - self.rotation)
+        if self.active:
+            desired_angular_velocity = simplify_angle(self.desired_velocity.get_rotation() - self.rotation)
 
-        correction_angular_velocity = desired_angular_velocity - self.angular_velocity
-        if abs(correction_angular_velocity) > self.angular_acceleration * delta:
-            correction_angular_velocity = (correction_angular_velocity / abs(
-                correction_angular_velocity)) * self.angular_acceleration * delta
-        self.angular_velocity += correction_angular_velocity
+            correction_angular_velocity = desired_angular_velocity - self.angular_velocity
+            if abs(correction_angular_velocity) > self.angular_acceleration * delta:
+                correction_angular_velocity = (correction_angular_velocity / abs(
+                    correction_angular_velocity)) * self.angular_acceleration * delta
+            self.angular_velocity += correction_angular_velocity
 
-        correction_vector = self.desired_velocity - self.linear_velocity
-        if abs(self.linear_velocity - self.desired_velocity) > self.linear_acceleration * delta:
-            correction_vector = self.linear_acceleration * delta * correction_vector.normalize()
-        self.linear_velocity += correction_vector
+            correction_vector = self.desired_velocity - self.linear_velocity
+            if abs(self.linear_velocity - self.desired_velocity) > self.linear_acceleration * delta:
+                correction_vector = self.linear_acceleration * delta * correction_vector.normalize()
+            self.linear_velocity += correction_vector
 
         super().update(delta, collisions)
 
@@ -413,25 +418,27 @@ class PhysicsRectAgent(PhysicsDynamicRect):
         self.angular_acceleration: float = angular_acceleration
 
         self.desired_velocity: Vector2 = Vector2(0, 0)
+        self.active: bool = True
 
-        self.render_velocities = settings.render_velocities
+        self.render_velocities: bool = settings.render_velocities
 
     def update(self, delta, collisions: list[Object] = None):
-        desired_angular_velocity = simplify_angle(self.desired_velocity.get_rotation() - self.rotation)
+        if self.active:
+            desired_angular_velocity = simplify_angle(self.desired_velocity.get_rotation() - self.rotation)
 
-        correction_angular_velocity = desired_angular_velocity - self.angular_velocity
-        if abs(correction_angular_velocity) > self.angular_acceleration * delta:
-            correction_angular_velocity = (correction_angular_velocity / abs(
-                correction_angular_velocity)) * self.angular_acceleration * delta
-        self.angular_velocity += correction_angular_velocity
+            correction_angular_velocity = desired_angular_velocity - self.angular_velocity
+            if abs(correction_angular_velocity) > self.angular_acceleration * delta:
+                correction_angular_velocity = (correction_angular_velocity / abs(
+                    correction_angular_velocity)) * self.angular_acceleration * delta
+            self.angular_velocity += correction_angular_velocity
 
-        projection_length = -self.desired_velocity.rotate(-self.rotation + 90).x
-        projection = Vector2(0, projection_length).rotate(self.rotation)
+            projection_length = -self.desired_velocity.rotate(-self.rotation + 90).x
+            projection = Vector2(0, projection_length).rotate(self.rotation)
 
-        correction_vector = projection - self.linear_velocity
-        if abs(correction_vector) > self.linear_acceleration * delta:
-            correction_vector = self.linear_acceleration * delta * correction_vector.normalize()
-        self.linear_velocity += correction_vector
+            correction_vector = projection - self.linear_velocity
+            if abs(correction_vector) > self.linear_acceleration * delta:
+                correction_vector = self.linear_acceleration * delta * correction_vector.normalize()
+            self.linear_velocity += correction_vector
 
         super().update(delta, collisions)
 

@@ -66,7 +66,9 @@ class Blueprints:
     tt_1 = CarBlueprint(
         Sprite(path='assets/images/sprites/cars/test_truck.png'),
         mass=8,
-        max_speed=200
+        max_speed=200,
+        linear_acceleration=200,
+        angular_acceleration=120
     )
 
 
@@ -146,7 +148,7 @@ editor_new_map = Map(
         Blueprints.p2_5x2.get_building(position=(538, 271), rotation=0, height=7),
         Blueprints.p1_5x2.get_building(position=(734, 771), rotation=90, height=5),
     ],
-    road_joints=[Vector2(1400, -100), Vector2(550, 1050), Vector2(-900, 1050), Vector2(-900, -100), ],
+    road_joints=[Vector2(1400, -100), Vector2(550, 1050), Vector2(-900, 1050), Vector2(-900, -100)],
     road_matrix=[
                  [0, 0, 0, 2],
                  [0, 0, 1, 0],
@@ -161,6 +163,7 @@ editor_new_map = Map(
                  [1, 0, 0, 0],
                 ],
     other_dynamic_objects=[
-        Blueprints.tt_1.get_car(position=(-900, -100))
+        Blueprints.tt_1.get_car(position=(-900, -100)),
+        Blueprints.tt_1.get_car(position=(-900, -1050))
     ]
 )

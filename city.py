@@ -286,6 +286,9 @@ class Car(physics.PhysicsRectAgent):
         if self.path and self.position.dist(self.path[0].x, self.path[0].y) <= self.path_min_distance:
             self.previous_vertex = self.path.pop(0)
 
+        #if self.path:
+        #    road_vector = self.path[0] - self.previous_vertex
+
         if not self.path:
             self.desired_velocity = Vector2(0, 0)
         elif len(self.path) == 1:
@@ -300,6 +303,12 @@ class Car(physics.PhysicsRectAgent):
         if abs(self.desired_velocity) > self.allowed_speed:
             self.desired_velocity = self.allowed_speed * self.desired_velocity.normalize()
         super().update(delta, collisions)
+
+    def set_allowed_speed(self, new_allowed_speed: float):
+        if new_allowed_speed > self.max_speed:
+            self.allowed_speed = self.max_speed
+        else:
+            self.allowed_speed = new_allowed_speed
 
     def set_path(self, new_path: list[Vector2]):
         self.path = new_path
@@ -344,13 +353,34 @@ class CityPathfinding:
         for obj in self.objects:
             for obj2 in self.objects:
                 if obj != obj2 and obj.is_colliding_with(obj2):
-                    pass # will implement collision response later
+                    if hasattr(obj, 'active'):
+                        obj.active = False
+                        obj.linear_velocity = 0
+                        obj.angular_velocity = 0
+
+                    if hasattr(obj2, 'active'):
+                        obj2.active = False
+                        obj.linear_velocity = 0
+                        obj.angular_velocity = 0
 
     def _set_agent_random_path(self, agent: Object, graph: RoadGraph):
         closest = graph.get_closest_joint_to(agent.position)
         target = random.randint(0, graph.n_joints - 1)
 
-        path = [graph.joints[i] for i in graph.get_shortest_path(closest, target)]
+        index_path = graph.get_shortest_path(closest, target)
+        path = []
+        for i in range(len(index_path) - 1):
+            index = index_path[i]
+            next_index = index_path[i + 1]
+
+            road_vector = graph.joints[next_index] - graph.joints[index]
+            lane_vector = settings.road_size * road_vector.normalize().rotate(-90)
+
+            selected_lane = random.randint(0, graph.matrix[index][next_index] - 1)
+
+            path.append(graph.joints[index] + (0.5 + selected_lane) * lane_vector)
+            path.append(graph.joints[next_index] + (0.5 + selected_lane) * lane_vector)
+
         path.reverse()
 
         agent.set_path(path)
