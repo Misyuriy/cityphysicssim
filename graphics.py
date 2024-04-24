@@ -51,7 +51,7 @@ class Window(object):
         self.fonts = {
             'title': pygame.font.SysFont('arialblack', 40),
             'subtitle': pygame.font.SysFont('arialblack', 32),
-            'text': pygame.font.SysFont('arial', 16),
+            'text': pygame.font.SysFont('arial', 20),
         }
 
         self.pressed_keys = set()
@@ -73,6 +73,10 @@ class Window(object):
 
     def render_circle(self, radius: float, position: tuple | list | Vector2, color: tuple | list):
         pygame.draw.circle(self.display, color, list(position), radius)
+
+    def render_rect(self, position: tuple | list | Vector2, shape: tuple | list | Vector2, color: tuple | list):
+        rect = [position.x, position.y, shape.x, shape.y]
+        pygame.draw.rect(self.display, color, rect)
 
     def render_line(self,
                     start: tuple | list | Vector2,
