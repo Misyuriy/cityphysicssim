@@ -1,3 +1,5 @@
+import random
+
 import graphics
 from graphics import Sprite
 
@@ -79,8 +81,6 @@ class RoadGraph:
         self.distance_matrix: list[list] = [[0 for _ in range(self.n_joints)] for _ in range(self.n_joints)]
         self.recalculate_distance_matrix()
 
-        print(self.distance_matrix)
-
         self.s_joint_color: tuple
         self.s_road_color: tuple
         self.road_color: tuple
@@ -123,6 +123,52 @@ class RoadGraph:
                 closest_joint = index
 
         return closest_joint
+
+    def get_neighbors_of(self, index: int):
+        connections = []
+        for j in range(self.n_joints):
+            if self.matrix[index][j] != 0:
+                connections.append(j)
+
+        return connections
+
+    def get_shortest_path(self, start_index: int, end_index: int):
+        # Dijkstra algorithm
+
+        unvisited_indexes = list(range(self.n_joints))
+        path_lengths = [float('inf') for _ in range(self.n_joints)]
+        previous_joints = [-1 for _ in range(self.n_joints)]
+
+        path_lengths[start_index] = 0
+
+        while unvisited_indexes:
+            current_min_index = None
+            for index in unvisited_indexes:
+                if current_min_index is None:
+                    current_min_index = index
+                elif path_lengths[index] < path_lengths[current_min_index]:
+                    current_min_index = index
+
+            neighbors = self.get_neighbors_of(current_min_index)
+            for neighbor in neighbors:
+                tentative_value = path_lengths[current_min_index] + self.distance_matrix[current_min_index][neighbor]
+                if tentative_value < path_lengths[neighbor]:
+                    path_lengths[neighbor] = tentative_value
+
+                    previous_joints[neighbor] = current_min_index
+
+            unvisited_indexes.pop(unvisited_indexes.index(current_min_index))
+
+        path = []
+        index = end_index
+
+        while index != start_index:
+            path.append(index)
+            index = previous_joints[index]
+
+        path.append(start_index)
+
+        return path
 
     def add_joint(self, position: Vector2, connected_index: int, connection_to_new: int = 1, connection_from_new: int = 1):
         self.joints.append(position)
@@ -289,9 +335,22 @@ class CityPathfinding:
 
     def update(self, delta: float):
         for agent in self.agents:
+            if not agent.path:
+                if isinstance(agent, Car):
+                    self._set_agent_random_path(agent, self.roads)
+
             agent.update(delta)
 
         for obj in self.objects:
             for obj2 in self.objects:
                 if obj != obj2 and obj.is_colliding_with(obj2):
                     pass # will implement collision response later
+
+    def _set_agent_random_path(self, agent: Object, graph: RoadGraph):
+        closest = graph.get_closest_joint_to(agent.position)
+        target = random.randint(0, graph.n_joints - 1)
+
+        path = [graph.joints[i] for i in graph.get_shortest_path(closest, target)]
+        path.reverse()
+
+        agent.set_path(path)

@@ -489,7 +489,7 @@ class Game:
     def print_map(self):
         print('new_map = Map(')
         print('    buildings=[')
-        for building in self.static_objects:
+        for building in self.city.obstacles:
             int_position = Vector2(int(building.position.x), int(building.position.y))
             print(f'        Blueprints.BLUEPRINTNAME.get_building(position={int_position}, rotation={int(building.rotation)}, height={building.height}),')
         print('    ],')
