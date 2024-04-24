@@ -102,34 +102,27 @@ class UI:
                 ]
             ),
             'MAP_EDITOR': UI.State(
-                text_labels=[
-                    ('TEST UI', Color.WHITE, Vector2(20, 0), 'title'),
-                    ('On Windows pygame.font.get_fonts() returns large number of system fonts', Color.WHITE, Vector2(20, 80), 'text')
-                ],
+                text_labels=[],
                 buttons=[
-                    TextButton('BUTTON',
+                    TextButton('< Back',
                                window.fonts['subtitle'],
-                               Vector2(20, 120), Vector2(200, 100),
+                               Vector2(20, 20), Vector2(160, 64),
                                Color.WHITE,
-                               Color.RED,
-                               button_pressed_color=Color.BLACK,
-                               button_hover_color=Color.BLUE)
+                               Color.uiDEFAULT,
+                               button_pressed_color=Color.uiPRESSED,
+                               button_hover_color=Color.uiHOVER)
                 ]
             ),
             'DEFAULT': UI.State(
-                text_labels=[
-                    ('TEST UI', Color.WHITE, Vector2(20, 0), 'title'),
-                    ('On Windows pygame.font.get_fonts() returns large number of system fonts', Color.WHITE,
-                     Vector2(20, 80), 'text')
-                ],
+                text_labels=[],
                 buttons=[
-                    TextButton('BUTTON',
+                    TextButton('< Back',
                                window.fonts['subtitle'],
-                               Vector2(20, 120), Vector2(200, 100),
+                               Vector2(20, 20), Vector2(160, 64),
                                Color.WHITE,
-                               Color.RED,
-                               button_pressed_color=Color.BLACK,
-                               button_hover_color=Color.BLUE)
+                               Color.uiDEFAULT,
+                               button_pressed_color=Color.uiPRESSED,
+                               button_hover_color=Color.uiHOVER)
                 ]
             )
         }

@@ -1,4 +1,5 @@
 framerate = 60
+print_map_on_quit = True
 
 # ___ Rendering and UI ____________________________
 render_hitbox = False

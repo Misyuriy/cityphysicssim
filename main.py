@@ -12,6 +12,9 @@ def mainloop():
     while game.running:
         game.update()
 
+    if settings.print_map_on_quit:
+        game.print_map()
+
 
 if __name__ == '__main__':
     mainloop()

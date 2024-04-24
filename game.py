@@ -179,6 +179,10 @@ class Game:
                 case InputType.QUIT:
                     self.running = False
 
+        signals = self.ui.update(input_events, self.window.get_mouse_position())
+        if signals['< Back']:
+            self.switch_state_to('MAIN_MENU')
+
     def _handle_input_physics_test(self, input_events: list):
         for event in input_events:
             camera_speed = settings.camera_speed
@@ -239,6 +243,10 @@ class Game:
 
                 case InputType.QUIT:
                     self.running = False
+
+        signals = self.ui.update(input_events, self.window.get_mouse_position())
+        if signals['< Back']:
+            self.switch_state_to('MAIN_MENU')
 
     def _handle_input_editor(self, input_events: list):
         if InputType.X in input_events and InputType.SHIFT in input_events:
@@ -337,8 +345,11 @@ class Game:
                     self._try_set_selected_road_to(0)
 
                 case InputType.QUIT:
-                    self.print_map()
                     self.running = False
+
+        signals = self.ui.update(input_events, self.window.get_mouse_position())
+        if signals['< Back']:
+            self.switch_state_to('MAIN_MENU')
 
     def switch_state_to(self, state_key: str):
         match state_key:
