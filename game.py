@@ -56,6 +56,52 @@ class Camera:
         return relative_position + self.position
 
 
+class UI:
+    class State:
+        def __init__(self, text_labels: list):
+            self.text_labels = text_labels
+
+        def get_text_labels(self):
+            return self.text_labels
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(UI, cls).__new__(cls)
+        return cls.instance
+
+    def __init__(self, state_key: str = 'MAIN_MENU'):
+        self.states: dict[str, UI.State] = {
+            'MAIN_MENU': UI.State(
+                text_labels=[
+                    ('City planner PY', Color.WHITE, Vector2(20, 0), 'title')
+                ]
+            ),
+            'MAP_EDITOR': UI.State(
+                text_labels=[
+                    ('TEST', Color.WHITE, Vector2(20, 0), 'title'),
+                    ('abacabadabacaba', Color.WHITE, Vector2(20, 80), 'text')
+                ]
+            )
+        }
+
+        self.state = self.states[state_key]
+
+    def set_state(self, state_key: str):
+        if state_key not in self.states.keys():
+            raise 'invalid UI state key: "' + state_key + '"'
+
+        self.state = self.states[state_key]
+
+    def render_to(self, window: Window):
+        for label_parameters in self.state.get_text_labels():
+            window.draw_text_label(
+                label_parameters[0],
+                label_parameters[1],
+                label_parameters[2],
+                font_option=label_parameters[3]
+            )
+
+
 class Game:
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, 'instance'):
@@ -65,6 +111,8 @@ class Game:
     def __init__(self, window: Window, city_map: maps.Map, framerate=settings.framerate, input_handling='DEFAULT'):
         self.window = window
         self.camera = Camera(position=city_map.initial_camera_position, shape=self.window.shape)
+
+        self.ui = UI(state_key='MAP_EDITOR')
 
         self.time = igtime.Time()
         self.framerate = framerate
@@ -127,6 +175,8 @@ class Game:
 
         for obj in self.objects:
             obj.render_to(self.window, self.camera)
+
+        self.ui.render_to(self.window)
 
         self.window.update()
         self.delta = self.time.tick(self.framerate)

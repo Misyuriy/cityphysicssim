@@ -1,6 +1,6 @@
 framerate = 60
 
-# ___ Rendering ____________________________
+# ___ Rendering and UI ____________________________
 render_hitbox = False
 render_velocities = False
 

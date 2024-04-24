@@ -48,6 +48,12 @@ class Window(object):
         if caption:
             pygame.display.set_caption(caption)
 
+        self.fonts = {
+            'title': pygame.font.SysFont('arialblack', 40),
+            'subtitle': pygame.font.SysFont('arialblack', 32),
+            'text': pygame.font.SysFont('arial', 16),
+        }
+
         self.pressed_keys = set()
 
     def render_polygon(self, vertices: list[Vector2], color: tuple | list):
@@ -111,6 +117,12 @@ class Window(object):
             self.render_line(start + perpendicular, end + perpendicular, edge_width, color, dash, gap)
         if left_edge:
             self.render_line(start + inverse, end + inverse, edge_width, color, dash, gap)
+
+    def draw_text_label(self, text: str, color: tuple, position: Vector2, font_option: str = 'text'):
+        font = self.fonts[font_option]
+
+        label = font.render(text, True, color)
+        self.display.blit(label, (position.x, position.y))
 
     def fill(self, color: tuple | list):
         self.display.fill(color)
