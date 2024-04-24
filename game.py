@@ -65,30 +65,21 @@ class Game:
             cls.instance = super(Game, cls).__new__(cls)
         return cls.instance
 
-    def __init__(self, window: Window, city_map: maps.Map, framerate=settings.framerate, input_handling='DEFAULT'):
+    def __init__(self, window: Window, city_map: maps.Map, framerate: int = settings.framerate):
         self.window = window
-        self.camera = Camera(position=city_map.initial_camera_position, shape=self.window.shape)
+        self.camera = Camera(position=city_map.initial_camera_position, shape=self.window.shape, schematic=True)
 
-        self.ui = UI(self.window, state_key='MAP_EDITOR')
+        self.ui = UI(self.window)
 
         self.time = igtime.Time()
         self.framerate = framerate
 
         self.selection = None
-        self.input_handler: callable
-        match input_handling:
-            case 'DEFAULT':
-                self.input_handler = self._handle_input_default
-            case 'PHYSICS_TEST':
-                self.input_handler = self._handle_input_physics_test
-            case 'MAP_EDITOR':
-                self.input_handler = self._handle_input_editor
-                self.camera.schematic = True
 
-            case _:
-                raise 'invalid input handling type: "' + input_handling + '"'
+        self.input_handler: callable = self._handle_input_menu
+        self.menu_on: bool = True
 
-        city_map.spawn_cars(density=settings.car_spawn_density)
+        #city_map.spawn_cars(density=settings.car_spawn_density)
 
         self.objects = city_map.get_objects()
         self.roads = city_map.get_roads()
@@ -105,6 +96,8 @@ class Game:
 
         self.running: bool = True
         self.delta: float = 0
+
+        self.switch_state_to('MAIN_MENU')
 
     def update(self):
         input_events = self.window.get_input()
@@ -124,20 +117,32 @@ class Game:
                 color = [Color.sDEFAULT[i] + difference[i] for i in range(3)]
                 self._render_grid(Vector2(grid[0], grid[1]), width=grid[2], color=color)
 
-        self.sidewalks.render_to(self.window, self.camera)
-        self.roads.render_to(self.window, self.camera)
+        if not self.menu_on:
+            self.sidewalks.render_to(self.window, self.camera)
+            self.roads.render_to(self.window, self.camera)
 
-        #if self.input_handler != self._handle_input_editor:
-        self.city.update(self.delta)
+            if self.input_handler == self._handle_input_default:
+                self.city.update(self.delta)
 
-        for obj in self.objects:
-            obj.render_to(self.window, self.camera)
+            for obj in self.objects:
+                obj.render_to(self.window, self.camera)
 
-        self.ui.update(input_events, self.window.get_mouse_position())
         self.ui.render_to(self.window)
 
         self.window.update()
         self.delta = self.time.tick(self.framerate)
+
+    def _handle_input_menu(self, input_events: list):
+        if InputType.QUIT in input_events:
+            self.running = False
+
+        signals = self.ui.update(input_events, self.window.get_mouse_position())
+        if signals['Edit city']:
+            self.switch_state_to('MAP_EDITOR')
+        elif signals['Simulate city']:
+            self.switch_state_to('DEFAULT')
+        elif signals['Quit']:
+            self.running = False
 
     def _handle_input_default(self, input_events: list):
         if InputType.X in input_events and InputType.SHIFT in input_events:
@@ -334,6 +339,37 @@ class Game:
                 case InputType.QUIT:
                     self.print_map()
                     self.running = False
+
+    def switch_state_to(self, state_key: str):
+        match state_key:
+            case 'MAIN_MENU':
+                self.menu_on = True
+                self.input_handler = self._handle_input_menu
+
+                self.camera.schematic = True
+                self.camera.schematic_scale = 0.5
+                self.camera.position = Vector2(0, 0)
+
+            case 'MAP_EDITOR':
+                self.menu_on = False
+                self.input_handler = self._handle_input_editor
+
+                self.camera.schematic = True
+                self.camera.schematic_scale = 0.25
+                self.camera.position = Vector2(0, 0)
+
+            case 'DEFAULT':
+                self.menu_on = False
+                self.input_handler = self._handle_input_default
+
+                self.camera.schematic_scale = 1
+                self.camera.schematic = False
+
+            case _:
+                raise 'invalid game state key: "' + state_key + '"'
+
+        self._reset_selection()
+        self.ui.set_state(state_key)
 
     def _reset_selection(self):
         if isinstance(self.selection, Object):

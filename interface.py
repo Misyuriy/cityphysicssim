@@ -43,13 +43,21 @@ class TextButton:
     def update(self, input_events: list, mouse_position: Vector2):
         br_corner = self.position + self.shape
 
+        released = False
+
         if self.position.x <= mouse_position.x <= br_corner.x and self.position.y <= mouse_position.y <= br_corner.y:
             if InputType.LMB in input_events:
                 self.state = 1
             else:
+                if self.state == 1:
+                    released = True
                 self.state = 2
         else:
+            if self.state == 1:
+                released = True
             self.state = 0
+
+        return released
 
 
 class UI:
@@ -67,14 +75,52 @@ class UI:
         self.states: dict[str, UI.State] = {
             'MAIN_MENU': UI.State(
                 text_labels=[
-                    ('City planner PY', Color.WHITE, Vector2(20, 0), 'title')
+                    ('CITY PLANNER PY', Color.WHITE, Vector2(96, 64), 'title')
                 ],
-                buttons=[]
+                buttons=[
+                    TextButton('Simulate city',
+                               window.fonts['subtitle'],
+                               Vector2(141, 200), Vector2(320, 64),
+                               Color.WHITE,
+                               Color.uiDEFAULT,
+                               button_pressed_color=Color.uiPRESSED,
+                               button_hover_color=Color.uiHOVER),
+                    TextButton('Edit city',
+                               window.fonts['subtitle'],
+                               Vector2(141, 264), Vector2(320, 64),
+                               Color.WHITE,
+                               Color.uiDEFAULT,
+                               button_pressed_color=Color.uiPRESSED,
+                               button_hover_color=Color.uiHOVER),
+                    TextButton('Quit',
+                               window.fonts['subtitle'],
+                               Vector2(141, 392), Vector2(320, 64),
+                               Color.WHITE,
+                               Color.uiDEFAULT_RED,
+                               button_pressed_color=Color.uiPRESSED_RED,
+                               button_hover_color=Color.uiHOVER_RED),
+                ]
             ),
             'MAP_EDITOR': UI.State(
                 text_labels=[
                     ('TEST UI', Color.WHITE, Vector2(20, 0), 'title'),
                     ('On Windows pygame.font.get_fonts() returns large number of system fonts', Color.WHITE, Vector2(20, 80), 'text')
+                ],
+                buttons=[
+                    TextButton('BUTTON',
+                               window.fonts['subtitle'],
+                               Vector2(20, 120), Vector2(200, 100),
+                               Color.WHITE,
+                               Color.RED,
+                               button_pressed_color=Color.BLACK,
+                               button_hover_color=Color.BLUE)
+                ]
+            ),
+            'DEFAULT': UI.State(
+                text_labels=[
+                    ('TEST UI', Color.WHITE, Vector2(20, 0), 'title'),
+                    ('On Windows pygame.font.get_fonts() returns large number of system fonts', Color.WHITE,
+                     Vector2(20, 80), 'text')
                 ],
                 buttons=[
                     TextButton('BUTTON',
@@ -109,5 +155,9 @@ class UI:
             )
 
     def update(self, input_events: list, mouse_position: Vector2):
+        button_signals = {}
         for button in self.state.buttons:
-            button.update(input_events, mouse_position)
+            signal = button.update(input_events, mouse_position)
+            button_signals[button.text] = signal
+
+        return button_signals

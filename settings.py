@@ -25,7 +25,6 @@ class Color:
 
     GRASS = (113, 135, 90)
     DIRT = (125, 105, 90)
-
     ASPHALT = (104, 104, 98)
     DARK_ASPHALT = (55, 55, 53)
     MARKING_WHITE = (222, 222, 206)
@@ -35,14 +34,20 @@ class Color:
 
     sSIDEWALK = (226, 226, 189)
     sSIDEWALK_VERTEX = (245, 245, 229)
-
     sBUILDING = (189, 212, 226)
     sCAR = (174, 221, 174)
-
     sROAD = (226, 189, 189)
     sVERTEX = (245, 229, 229)
 
-    sSELECTED = (189, 226, 213)
+    sSELECTED = (189, 226, 212)
+
+    uiDEFAULT = (160, 195, 214)
+    uiPRESSED = (96, 156, 186)
+    uiHOVER = (189, 212, 226)
+
+    uiDEFAULT_RED = (214, 160, 160)
+    uiPRESSED_RED = (186, 96, 96)
+    uiHOVER_RED = (226, 189, 189)
 
 
 # ___ City ____________________________
