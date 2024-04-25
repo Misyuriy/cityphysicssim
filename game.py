@@ -79,8 +79,6 @@ class Game:
         self.input_handler: callable = self._handle_input_menu
         self.menu_on: bool = True
 
-        #city_map.spawn_cars(density=settings.car_spawn_density)
-
         self.objects = city_map.get_objects()
         self.roads = city_map.get_roads()
         self.sidewalks = city_map.get_sidewalks()
@@ -89,7 +87,8 @@ class Game:
             city_map.get_dynamic_objects(),
             city_map.get_static_objects(),
             self.roads,
-            self.sidewalks
+            self.sidewalks,
+            car_blueprints=[Blueprints.tt_1]
         )
 
         self.shift_x_hold = False
@@ -161,13 +160,13 @@ class Game:
 
             match event:
                 case InputType.W:
-                    self.camera.position.y -= camera_speed / self.camera.schematic_scale
+                    self.camera.position.y -= (camera_speed / self.camera.schematic_scale) * self.delta
                 case InputType.A:
-                    self.camera.position.x -= camera_speed / self.camera.schematic_scale
+                    self.camera.position.x -= (camera_speed / self.camera.schematic_scale) * self.delta
                 case InputType.S:
-                    self.camera.position.y += camera_speed / self.camera.schematic_scale
+                    self.camera.position.y += (camera_speed / self.camera.schematic_scale) * self.delta
                 case InputType.D:
-                    self.camera.position.x += camera_speed / self.camera.schematic_scale
+                    self.camera.position.x += (camera_speed / self.camera.schematic_scale) * self.delta
 
                 case InputType.SCROLL_UP:
                     if self.camera.schematic:
@@ -191,13 +190,13 @@ class Game:
 
             match event:
                 case InputType.W:
-                    self.camera.position.y -= camera_speed / self.camera.schematic_scale
+                    self.camera.position.y -= (camera_speed / self.camera.schematic_scale) * self.delta
                 case InputType.A:
-                    self.camera.position.x -= camera_speed / self.camera.schematic_scale
+                    self.camera.position.x -= (camera_speed / self.camera.schematic_scale) * self.delta
                 case InputType.S:
-                    self.camera.position.y += camera_speed / self.camera.schematic_scale
+                    self.camera.position.y += (camera_speed / self.camera.schematic_scale) * self.delta
                 case InputType.D:
-                    self.camera.position.x += camera_speed / self.camera.schematic_scale
+                    self.camera.position.x += (camera_speed / self.camera.schematic_scale) * self.delta
 
                 case InputType.LMB:
                     new_selection = self._get_selected_physics_object(self.window.get_mouse_position())
@@ -265,13 +264,13 @@ class Game:
 
             match event:
                 case InputType.W:
-                    self.camera.position.y -= camera_speed / self.camera.schematic_scale
+                    self.camera.position.y -= (camera_speed / self.camera.schematic_scale) * self.delta
                 case InputType.A:
-                    self.camera.position.x -= camera_speed / self.camera.schematic_scale
+                    self.camera.position.x -= (camera_speed / self.camera.schematic_scale) * self.delta
                 case InputType.S:
-                    self.camera.position.y += camera_speed / self.camera.schematic_scale
+                    self.camera.position.y += (camera_speed / self.camera.schematic_scale) * self.delta
                 case InputType.D:
-                    self.camera.position.x += camera_speed / self.camera.schematic_scale
+                    self.camera.position.x += (camera_speed / self.camera.schematic_scale) * self.delta
 
                 case InputType.Z:
                     if InputType.SHIFT in input_events and isinstance(self.selection, int):
@@ -361,6 +360,9 @@ class Game:
                 self.camera.schematic_scale = 0.5
                 self.camera.position = Vector2(0, 0)
 
+                self.city.clear_agents()
+                self.objects = [obj for obj in self.objects if not isinstance(obj, city.Car)]
+
             case 'MAP_EDITOR':
                 self.menu_on = False
                 self.input_handler = self._handle_input_editor
@@ -369,12 +371,17 @@ class Game:
                 self.camera.schematic_scale = 0.25
                 self.camera.position = Vector2(0, 0)
 
+                self.city.clear_agents()
+                self.objects = [obj for obj in self.objects if not isinstance(obj, city.Car)]
+
             case 'DEFAULT':
                 self.menu_on = False
                 self.input_handler = self._handle_input_default
 
                 self.camera.schematic_scale = 1
                 self.camera.schematic = False
+
+                self.objects += self.city.spawn_agents(density=settings.car_spawn_density)
 
             case _:
                 raise 'invalid game state key: "' + state_key + '"'
@@ -449,8 +456,8 @@ class Game:
         global_mouse_position = self.camera.get_global_position(self.window.get_mouse_position())
 
         new_building = blueprint.get_building(global_mouse_position, height=5)
-        self.static_objects.append(new_building)
         self.objects.append(new_building)
+        self.city.obstacles.append(new_building)
 
         self.selection = new_building
         new_building.schematic_color = Color.sSELECTED
@@ -460,7 +467,7 @@ class Game:
             return
 
         selected_graph = self._get_selected_graph()
-        if selected_graph != self.roads and (width != 2):
+        if selected_graph != self.roads and (width != 2) and (width != 0):
             return
 
         i = self.selection[0]

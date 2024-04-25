@@ -118,15 +118,6 @@ class Map:
     def get_sidewalks(self):
         return city.RoadGraph(self.sidewalk_joints, self.sidewalk_matrix, color_variant=1)
 
-    def spawn_cars(self, density: float = 1):
-        if not self.car_blueprint_set:
-            return
-
-        for joint in self.road_joints:
-            if random.uniform(0, 1) <= density: # if density = 1, cars will spawn at all joints
-                blueprint_choice = random.choice(self.car_blueprint_set)
-                self.other_dynamic_objects.append(blueprint_choice.get_car(position=joint))
-
 
 physics_test_map = Map(
     buildings=[

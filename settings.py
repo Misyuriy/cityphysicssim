@@ -5,7 +5,7 @@ print_map_on_quit = True
 render_hitbox = False
 render_velocities = False
 
-camera_speed = 2
+camera_speed = 200
 camera_zoom_speed = 1.05
 
 parallax_scaling_step = 1.05
@@ -58,7 +58,7 @@ sidewalk_size = 48
 marking_size = 4
 dotted_marking = [48, 48]
 
-car_spawn_density = 1
+car_spawn_density = 0.5
 
 
 # ___ Physics ______________________________

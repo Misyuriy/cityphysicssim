@@ -347,13 +347,20 @@ class CityPathfinding:
             cls.instance = super(CityPathfinding, cls).__new__(cls)
         return cls.instance
 
-    def __init__(self, agents: list[Object], obstacles: list[Object], roads: RoadGraph, sidewalks: RoadGraph):
+    def __init__(self,
+                 agents: list[Object],
+                 obstacles: list[Object],
+                 roads: RoadGraph,
+                 sidewalks: RoadGraph,
+                 car_blueprints: list = []):
         self.agents: list[Object] = agents
         self.obstacles: list[Object] = obstacles
         self.objects: list[Object] = self.agents + self.obstacles
 
         self.roads: RoadGraph = roads
         self.sidewalks: RoadGraph = sidewalks
+
+        self.car_blueprints = car_blueprints
 
     def update(self, delta: float):
         for agent in self.agents:
@@ -365,12 +372,32 @@ class CityPathfinding:
 
         for obj in self.objects:
             for obj2 in self.objects:
-                if obj != obj2 and obj.is_colliding_with(obj2):
+                if (obj != obj2) and obj.is_colliding_with(obj2):
                     if hasattr(obj, 'active'):
                         obj.crash()
 
                     if hasattr(obj2, 'active'):
                         obj2.crash()
+
+    def spawn_agents(self, density: float = 1) -> list:
+        if not self.car_blueprints:
+            return []
+
+        new_agents = []
+        for joint in self.roads.joints:
+            if random.uniform(0, 1) <= density: # if density = 1, cars will spawn at all joints
+                blueprint_choice = random.choice(self.car_blueprints)
+
+                car = blueprint_choice.get_car(position=joint)
+                new_agents.append(car)
+
+        self.objects += new_agents
+        self.agents += new_agents
+
+        return new_agents
+
+    def clear_agents(self):
+        self.agents.clear()
 
     def _set_agent_random_path(self, agent: Object, graph: RoadGraph):
         closest = graph.get_closest_joint_to(agent.position)
