@@ -295,14 +295,18 @@ class Car(physics.PhysicsRectAgent):
 
             if not self.path:
                 self.desired_velocity = Vector2(0, 0)
-            elif len(self.path) == 1:
-                self.desired_velocity = self.path[0] - self.position
             else:
-                path_left = self.position.dist(self.path[0].x, self.path[1].x) / self.path[0].dist(self.previous_vertex.x, self.previous_vertex.y)
-
                 self.desired_velocity = self.path[0] - self.position
-                if path_left <= self.turning_margin:
-                    self.desired_velocity += (self.turning_margin - path_left) * (self.path[1] - self.position)
+                added_velocities = 1
+
+                while added_velocities < len(self.path):
+                    next_desired_velocity = self.path[added_velocities] - self.position
+
+                    if abs(self.desired_velocity.normalize() - next_desired_velocity.normalize()) < settings.min_next_desired_difference:
+                        self.desired_velocity += next_desired_velocity
+                        added_velocities += 1
+                    else:
+                        break
 
             if abs(self.desired_velocity) > self.allowed_speed:
                 self.desired_velocity = self.allowed_speed * self.desired_velocity.normalize()
@@ -385,7 +389,7 @@ class CityPathfinding:
 
         new_agents = []
         for joint in self.roads.joints:
-            if random.uniform(0, 1) <= density: # if density = 1, cars will spawn at all joints
+            if random.uniform(0, 1) <= density: # if density = 1 or more, cars will spawn at all joints
                 blueprint_choice = random.choice(self.car_blueprints)
 
                 car = blueprint_choice.get_car(position=joint)
@@ -405,6 +409,7 @@ class CityPathfinding:
 
         index_path = graph.get_shortest_path(closest, target)
         path = []
+
         for i in range(len(index_path) - 1):
             index = index_path[i]
             next_index = index_path[i + 1]
@@ -415,6 +420,14 @@ class CityPathfinding:
             selected_lane = random.randint(0, graph.matrix[index][next_index] - 1)
 
             path.append(graph.joints[index] + (0.5 + selected_lane) * lane_vector)
+
+            intermediate_x = settings.path_intermediate_points_distance
+            while intermediate_x < abs(road_vector):
+                intermediate_road_vector = intermediate_x * road_vector.normalize()
+                path.append(graph.joints[index] + intermediate_road_vector + (0.5 + selected_lane) * lane_vector)
+
+                intermediate_x += settings.path_intermediate_points_distance
+
             path.append(graph.joints[next_index] + (0.5 + selected_lane) * lane_vector)
 
         path.reverse()

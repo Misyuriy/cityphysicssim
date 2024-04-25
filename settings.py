@@ -3,7 +3,7 @@ print_map_on_quit = True
 
 # ___ Rendering and UI ____________________________
 render_hitbox = False
-render_velocities = False
+render_velocities = True
 
 camera_speed = 200
 camera_zoom_speed = 1.05
@@ -67,4 +67,11 @@ angular_mu = 1
 
 
 # ___ Pathfinding __________________________
-path_min_distance = 128
+path_min_distance = 32
+
+# minimal difference between normalized desired velocities to path[0] and path[1]
+# to allow adding them together to stimulate higher agent speed
+min_next_desired_difference = 0.04
+
+# how often to create points between joints to better correct agents
+path_intermediate_points_distance = 128
