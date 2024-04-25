@@ -88,7 +88,13 @@ class Game:
             city_map.get_static_objects(),
             self.roads,
             self.sidewalks,
-            car_blueprints=[Blueprints.tt_1]
+            car_blueprints=[
+                Blueprints.car_ct,
+                Blueprints.car_ft,
+                Blueprints.car_p,
+                Blueprints.car_c1,
+                Blueprints.car_c2
+            ]
         )
 
         self.shift_x_hold = False

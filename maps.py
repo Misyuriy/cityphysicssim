@@ -68,6 +68,47 @@ class Blueprints:
         Sprite(path='assets/images/sprites/buildings/panel_long_roof.png'))
 
     # Cars:
+    car_ct = CarBlueprint(
+        Sprite(path='assets/images/sprites/cars/cargo_truck.png'),
+        mass=8,
+        max_speed=200,
+        crashed_sprite=Sprite(path='assets/images/sprites/cars/cargo_truck_crashed.png'),
+        linear_acceleration=200,
+        angular_acceleration=120
+    )
+    car_ft = CarBlueprint(
+        Sprite(path='assets/images/sprites/cars/fire_truck.png'),
+        mass=8,
+        max_speed=200,
+        crashed_sprite=Sprite(path='assets/images/sprites/cars/fire_truck_crashed.png'),
+        linear_acceleration=200,
+        angular_acceleration=120
+    )
+    car_p = CarBlueprint(
+        Sprite(path='assets/images/sprites/cars/pickup.png'),
+        mass=8,
+        max_speed=200,
+        crashed_sprite=Sprite(path='assets/images/sprites/cars/pickup_crashed.png'),
+        linear_acceleration=200,
+        angular_acceleration=120
+    )
+    car_c2 = CarBlueprint(
+        Sprite(path='assets/images/sprites/cars/car_2.png'),
+        mass=8,
+        max_speed=200,
+        crashed_sprite=Sprite(path='assets/images/sprites/cars/car_2_crashed.png'),
+        linear_acceleration=200,
+        angular_acceleration=120
+    )
+    car_c1 = CarBlueprint(
+        Sprite(path='assets/images/sprites/cars/car_1.png'),
+        mass=8,
+        max_speed=200,
+        crashed_sprite=Sprite(path='assets/images/sprites/cars/car_1_crashed.png'),
+        linear_acceleration=200,
+        angular_acceleration=120
+    )
+
     tt_1 = CarBlueprint(
         Sprite(path='assets/images/sprites/cars/test_truck.png'),
         mass=8,
