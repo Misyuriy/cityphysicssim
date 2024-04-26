@@ -195,24 +195,24 @@ test_big_map = Map(
 
 editor_new_map = Map(
     buildings=[
-        Blueprints.p2_5x2.get_building(position=(538, 271), rotation=0, height=7),
-        Blueprints.p1_5x2.get_building(position=(734, 771), rotation=90, height=5),
+        Blueprints.p2_5x2.get_building(position=(540, 260), rotation=0, height=7),
+        Blueprints.p1_5x2.get_building(position=(740, 1040), rotation=90, height=5),
+        Blueprints.p2_5x2.get_building(position=(-380, 260), rotation=0, height=3),
     ],
-    road_joints=[Vector2(1400, -100), Vector2(550, 1050), Vector2(-900, 1050), Vector2(-900, -100)],
+    road_joints=[Vector2(1450, -160), Vector2(1450, 1580), Vector2(-844, 1580), Vector2(-844, -160), Vector2(-2850, -160)],
     road_matrix=[
-                 [0, 0, 0, 2],
-                 [0, 0, 1, 0],
-                 [0, 1, 0, 1],
-                 [2, 0, 1, 0],
+                 [0, 0, 0, 2, 0],
+                 [0, 0, 1, 0, 0],
+                 [0, 1, 0, 1, 0],
+                 [2, 0, 1, 0, 2],
+                 [0, 0, 0, 2, 0],
                 ],
-    sidewalk_joints=[Vector2(50, 50), Vector2(950, 50), Vector2(950, 950), Vector2(50, 950), ],
+    sidewalk_joints=[Vector2(50, 50), Vector2(950, 50), Vector2(950, 1450), Vector2(-710, 50), Vector2(-710, 1450)],
     sidewalk_matrix=[
-                 [0, 1, 0, 1],
-                 [1, 0, 1, 0],
-                 [0, 1, 0, 0],
-                 [1, 0, 0, 0],
-                ],
-    car_blueprint_set=[
-        Blueprints.tt_1
-    ]
+                 [0, 1, 0, 1, 0],
+                 [1, 0, 1, 0, 0],
+                 [0, 1, 0, 0, 1],
+                 [1, 0, 0, 0, 0],
+                 [0, 0, 1, 0, 0],
+                ]
 )
